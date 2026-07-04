@@ -1,6 +1,6 @@
 # Development and Publishing Runbook
 
-This runbook describes how to build, verify, package, and publish BuildSkill Intellij for IntelliJ.
+This runbook describes how to build, verify, package, and publish BuildSkill for IntelliJ IDEA.
 
 ## 1. Local development
 
@@ -47,7 +47,7 @@ Complete the repository cleanup checklist:
 Recommended values:
 
 ```text
-Plugin name: BuildSkill Intellij
+Plugin name: BuildSkill
 Repository: buildskill-intellij
 Default package: com.spmisha134.buildskill
 ```

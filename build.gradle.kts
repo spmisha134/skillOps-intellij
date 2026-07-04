@@ -21,14 +21,14 @@ dependencies {
 intellijPlatform {
     pluginConfiguration {
         id = "com.spmisha134.buildskill"
-        name = "BuildSkill Intellij"
+        name = "BuildSkill"
         description = """
-            <p>BuildSkill Intellij creates and validates repository-scoped Codex/OpenAI skills directly inside IntelliJ IDEA.</p>
+            <p>BuildSkill creates and validates repository-scoped Codex/OpenAI skills directly inside IntelliJ IDEA.</p>
             <p>It generates the official <code>.agents/skills/&lt;skill-name&gt;/</code> structure, keeps <code>SKILL.md</code> small, writes reference files, and validates the result before reporting success.</p>
         """.trimIndent()
         changeNotes = """
             <ul>
-                <li>Initial release of BuildSkill Intellij.</li>
+                <li>Initial release of BuildSkill.</li>
                 <li>Adds project-view actions for creating and validating Codex skills.</li>
                 <li>Generates <code>SKILL.md</code>, reference files, optional support folders, and mandatory <code>agents/openai.yaml</code>.</li>
                 <li>Adds deterministic validation for generated and existing skills.</li>

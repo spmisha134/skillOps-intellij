@@ -1,6 +1,6 @@
 <idea-plugin>
     <id>com.spmisha134.buildskill</id>
-    <name>BuildSkill Intellij</name>
+    <name>BuildSkill</name>
     <vendor>spmisha134</vendor>
     <description><![CDATA[
         <p>Create and validate Codex/OpenAI skills directly inside IntelliJ IDEA.</p>
