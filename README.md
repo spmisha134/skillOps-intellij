@@ -1,45 +1,171 @@
-# codex-skill-builder-intellij-plugin
+BuildSkill Intellij Plugin
+==========================
 
-![Build](https://github.com/spmisha134/codex-skill-builder-intellij-plugin/workflows/Build/badge.svg)
-[![Version](https://img.shields.io/jetbrains/plugin/v/MARKETPLACE_ID.svg)](https://plugins.jetbrains.com/plugin/MARKETPLACE_ID)
-[![Downloads](https://img.shields.io/jetbrains/plugin/d/MARKETPLACE_ID.svg)](https://plugins.jetbrains.com/plugin/MARKETPLACE_ID)
+[![Build Status](https://github.com/spmisha134/buildskill-intellij/actions/workflows/build.yml/badge.svg)](https://github.com/spmisha134/buildskill-intellij/actions/workflows/build.yml?query=branch%3Amaster)
 
-## Template ToDo list
-- [x] Create a new [IntelliJ Platform Plugin Template][template] project.
-- [ ] Get familiar with the [template documentation][template].
-- [ ] Adjust the [group](./gradle.properties), as well as the [id](./src/main/resources/META-INF/plugin.xml), [name](./src/main/resources/META-INF/plugin.xml), and [sources package](./src/main/kotlin).
-- [ ] Adjust the plugin [description](./src/main/resources/META-INF/plugin.xml) (see [Tips][docs:plugin-description]) and this README to describe what your plugin does.
-- [ ] Review the [Legal Agreements](https://plugins.jetbrains.com/docs/marketplace/legal-agreements.html?from=IJPluginTemplate).
-- [ ] [Publish a plugin manually](https://plugins.jetbrains.com/docs/intellij/publishing-plugin.html?from=IJPluginTemplate) for the first time.
-- [ ] Set the `MARKETPLACE_ID` in the above README badges. You can obtain it once the plugin is published to JetBrains Marketplace.
-- [ ] Set the [Plugin Signing](https://plugins.jetbrains.com/docs/intellij/plugin-signing.html?from=IJPluginTemplate) related [secrets](https://github.com/JetBrains/intellij-platform-plugin-template#environment-variables).
-- [ ] Set the [Deployment Token](https://plugins.jetbrains.com/docs/marketplace/plugin-upload.html?from=IJPluginTemplate).
-- [ ] Click the <kbd>Watch</kbd> button on the top of the [IntelliJ Platform Plugin Template][template] to be notified about releases containing new features and fixes.
+BuildSkill Intellij is an IntelliJ IDEA plugin that creates and validates repository-scoped Codex/OpenAI skills.
+It generates `.agents/skills/<skill-name>/`, keeps `SKILL.md` small, writes the supporting reference files, and validates the result before the skill is used or committed.
 
-This Fancy IntelliJ Platform Plugin is going to be your implementation of the brilliant ideas that you have.
+Useful links
+------------
 
-## Installation
+- [Product requirements](docs/product/PRODUCT_REQUIREMENTS.md)
+    - Defines the user workflow, generated skill structure, validation behavior, and out-of-scope product behavior.
+- [Architecture](docs/architecture/ARCHITECTURE.md)
+    - Documents package boundaries between IntelliJ integration, generation, validation, and presentation.
+- [Development and publishing runbook](docs/development/RUNBOOK.md)
+    - Describes local verification, packaging, release, signing, and Marketplace publication steps.
 
-- Using the IDE built-in plugin system:
+How to install
+--------------
 
-  <kbd>Settings/Preferences</kbd> > <kbd>Plugins</kbd> > <kbd>Marketplace</kbd> > <kbd>Search for "codex-skill-builder-intellij-plugin"</kbd> >
-  <kbd>Install</kbd>
+BuildSkill Intellij is installed from a local plugin ZIP until the first JetBrains Marketplace release is published.
 
-- Using JetBrains Marketplace:
+Build the plugin:
 
-  Go to [JetBrains Marketplace](https://plugins.jetbrains.com/plugin/MARKETPLACE_ID) and install it by clicking the <kbd>Install to ...</kbd> button in case your IDE is running.
+```bash
+./gradlew buildPlugin
+```
 
-  You can also download the [latest release](https://plugins.jetbrains.com/plugin/MARKETPLACE_ID/versions) from JetBrains Marketplace and install it manually using
-  <kbd>Settings/Preferences</kbd> > <kbd>Plugins</kbd> > <kbd>⚙️</kbd> > <kbd>Install plugin from disk...</kbd>
+Install the generated ZIP from `build/distributions/` using the IDE preferences:
 
-- Manually:
+```text
+IntelliJ IDEA
+→ Settings/Preferences
+→ Plugins
+→ ⚙️
+→ Install Plugin from Disk...
+```
 
-  Download the [latest release](https://github.com/spmisha134/codex-skill-builder-intellij-plugin/releases/latest) and install it manually using
-  <kbd>Settings/Preferences</kbd> > <kbd>Plugins</kbd> > <kbd>⚙️</kbd> > <kbd>Install plugin from disk...</kbd>
+How to use
+----------
 
+Create a skill from the IntelliJ project view:
 
----
-Plugin based on the [IntelliJ Platform Plugin Template][template].
+```text
+Right-click project or folder
+→ New
+→ BuildSkill
+```
 
-[template]: https://github.com/JetBrains/intellij-platform-plugin-template
-[docs:plugin-description]: https://plugins.jetbrains.com/docs/intellij/plugin-user-experience.html#plugin-description-and-presentation
+The plugin creates:
+
+```text
+.agents/
+  skills/
+    <skill-name>/
+      SKILL.md
+      references/
+        instructions.md
+        validation.md
+        examples.md
+      scripts/
+      assets/
+      agents/
+        openai.yaml
+```
+
+Validate a skill from the project view:
+
+```text
+Right-click skill folder
+→ Validate BuildSkill
+```
+
+Validation checks the skill location, `SKILL.md` front matter, required reference files, project instruction discovery, safe folder naming, and mandatory `agents/openai.yaml` metadata.
+
+Questions and Feedback?
+-----------------------
+
+Use GitHub issues in the `buildskill-intellij` repository for bugs, workflow problems, and feature requests.
+
+When reporting a problem, include:
+
+- IntelliJ IDEA version
+- BuildSkill Intellij version
+- operating system
+- steps to reproduce
+- expected and actual behavior
+
+Contributing
+------------
+
+Before contributing, read:
+
+- [AGENTS.md](AGENTS.md)
+- [Product requirements](docs/product/PRODUCT_REQUIREMENTS.md)
+- [Architecture](docs/architecture/ARCHITECTURE.md)
+
+Keep pull requests focused. Include what changed, why it changed, and how it was verified.
+
+How to build
+------------
+
+```bash
+./gradlew buildPlugin
+```
+
+Note that the above won't run tests and checks. To do that too, run:
+
+```bash
+./gradlew check buildPlugin
+```
+
+For the complete list of tasks, see:
+
+```bash
+./gradlew tasks
+```
+
+How to run UI tests
+-------------------
+
+This project does not currently include UI integration tests.
+
+Manual IDE verification is done with:
+
+```bash
+./gradlew runIde
+```
+
+Then verify:
+
+```text
+Right-click project/folder → New → BuildSkill
+Right-click skill folder → Validate BuildSkill
+```
+
+How to develop in IntelliJ
+--------------------------
+
+Import the project as a Gradle project using JDK 21.
+
+Whenever you change a Gradle setting, for example `build.gradle.kts`, `settings.gradle.kts`, or `gradle.properties`, refresh all Gradle projects from the Gradle toolbar.
+
+To run an IntelliJ instance with the plugin installed:
+
+```bash
+./gradlew runIde
+```
+
+Plugin Verification
+-------------------
+
+The project uses the IntelliJ Platform Gradle Plugin verification tasks.
+To run local verification:
+
+```bash
+./gradlew check
+./gradlew verifyPlugin
+```
+
+Release
+-------
+
+The first public release is `0.1.0`.
+Release steps, signing requirements, and Marketplace publication notes are maintained in [docs/development/RUNBOOK.md](docs/development/RUNBOOK.md).
+
+License
+-------
+
+Licensed under the [Apache License, Version 2.0](LICENSE).

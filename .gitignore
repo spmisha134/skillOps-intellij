@@ -1,6 +1,40 @@
 .DS_Store
+
+# IntelliJ and local IDE state
 .gradle
 .idea
+.run
 .intellijPlatform
 .kotlin
+*.iml
+
+# Build and generated output
 build
+out
+target
+dist
+tmp
+temp
+
+# Local Codex/OpenAI agent state and private planning docs
+docs/specs/
+.agents/
+.codex/
+
+# Local environment and secrets
+.env
+.env.*
+!.env.example
+*.local
+local.properties
+gradle-local.properties
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.keystore
+
+# Logs
+*.log
+logs/

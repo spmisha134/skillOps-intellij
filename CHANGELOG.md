@@ -1,7 +1,12 @@
 <!-- Keep a Changelog guide -> https://keepachangelog.com -->
 
-# codex-skill-builder-intellij-plugin Changelog
+# buildskill-intellij Changelog
 
 ## [Unreleased]
+
+## [0.1.0]
 ### Added
-- Initial scaffold created from [IntelliJ Platform Plugin Template](https://github.com/JetBrains/intellij-platform-plugin-template)
+- BuildSkill Intellij plugin foundation.
+- Project-view actions for creating and validating Codex skills.
+- Deterministic skill generation and validation logic.
+- Mandatory `agents/openai.yaml` generation with interface metadata.
