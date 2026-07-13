@@ -1,9 +1,9 @@
-BuildSkill Intellij Plugin
-==========================
+SkillOps Plugin
+=================
 
-[![Build Status](https://github.com/spmisha134/buildskill-intellij/actions/workflows/build.yml/badge.svg)](https://github.com/spmisha134/buildskill-intellij/actions/workflows/build.yml?query=branch%3Amaster)
+[![Build Status](https://github.com/spmisha134/skillops-intellij/actions/workflows/build.yml/badge.svg)](https://github.com/spmisha134/skillops-intellij/actions/workflows/build.yml?query=branch%3Amaster)
 
-BuildSkill Intellij is an IntelliJ IDEA plugin that creates and validates repository-scoped Codex/OpenAI skills.
+SkillOps is an IntelliJ IDEA plugin that creates and validates repository-scoped Codex/OpenAI skills.
 It generates `.agents/skills/<skill-name>/`, keeps `SKILL.md` small, writes the supporting reference files, and validates the result before the skill is used or committed.
 
 Useful links
@@ -19,7 +19,7 @@ Useful links
 How to install
 --------------
 
-BuildSkill Intellij is installed from a local plugin ZIP until the first JetBrains Marketplace release is published.
+SkillOps is installed from a local plugin ZIP until the first JetBrains Marketplace release is published.
 
 Build the plugin:
 
@@ -45,7 +45,7 @@ Create a skill from the IntelliJ project view:
 ```text
 Right-click project or folder
 → New
-→ BuildSkill
+→ SkillOps
 ```
 
 The plugin creates:
@@ -69,20 +69,29 @@ Validate a skill from the project view:
 
 ```text
 Right-click skill folder
-→ Validate BuildSkill
+→ Validate SkillOps
 ```
 
 Validation checks the skill location, `SKILL.md` front matter, required reference files, project instruction discovery, safe folder naming, and mandatory `agents/openai.yaml` metadata.
 
+Review token usage and efficiency after a Codex run:
+
+```text
+Tools
+→ Show SkillOps Run Insights
+```
+
+Run insights scan recent Codex JSONL sessions from the configured Codex home, detect whether a generated SkillOps skill appears in the session, and show token totals, input/output split, cached-token percentage, reasoning-token percentage, repository/search activity, rate-limit status, and session-size warnings.
+
 Questions and Feedback?
 -----------------------
 
-Use GitHub issues in the `buildskill-intellij` repository for bugs, workflow problems, and feature requests.
+Use GitHub issues in the `skillops-intellij` repository for bugs, workflow problems, and feature requests.
 
 When reporting a problem, include:
 
 - IntelliJ IDEA version
-- BuildSkill Intellij version
+- SkillOps version
 - operating system
 - steps to reproduce
 - expected and actual behavior
@@ -131,8 +140,8 @@ Manual IDE verification is done with:
 Then verify:
 
 ```text
-Right-click project/folder → New → BuildSkill
-Right-click skill folder → Validate BuildSkill
+Right-click project/folder → New → SkillOps
+Right-click skill folder → Validate SkillOps
 ```
 
 How to develop in IntelliJ

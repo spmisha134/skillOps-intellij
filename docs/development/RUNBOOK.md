@@ -1,6 +1,6 @@
 # Development and Publishing Runbook
 
-This runbook describes how to build, verify, package, and publish BuildSkill for IntelliJ IDEA.
+This runbook describes how to build, verify, package, and publish SkillOps for IntelliJ IDEA.
 
 ## 1. Local development
 
@@ -47,9 +47,9 @@ Complete the repository cleanup checklist:
 Recommended values:
 
 ```text
-Plugin name: BuildSkill
-Repository: buildskill-intellij
-Default package: com.spmisha134.buildskill
+Plugin name: SkillOps
+Repository: skillops-intellij
+Default package: com.spmisha134.skillops
 ```
 
 Recommended plugin description:
@@ -172,8 +172,8 @@ Before creating a release:
 - [ ] `./gradlew check` passes
 - [ ] `./gradlew buildPlugin` succeeds
 - [ ] Plugin ZIP installs manually
-- [ ] `New → BuildSkill` action works
-- [ ] `Validate BuildSkill` action works
+- [ ] `New → SkillOps` action works
+- [ ] `Validate SkillOps` action works
 - [ ] Generated skill is created under `.agents/skills/<skill-name>/`
 - [ ] Generated `SKILL.md` is small
 - [ ] Generated reference files are created

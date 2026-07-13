@@ -1,8 +1,8 @@
-# Product Requirements: BuildSkill Intellij for IntelliJ
+# Product Requirements: SkillOps for IntelliJ IDEA
 
 ## 1. Product summary
 
-BuildSkill Intellij is an IntelliJ IDEA plugin that creates and validates repository-scoped Codex/OpenAI skills.
+SkillOps is an IntelliJ IDEA plugin that creates and validates repository-scoped Codex/OpenAI skills.
 
 The plugin is a deterministic project tool. It does not generate content through an LLM. It creates a correct skill folder structure, renders a small `SKILL.md`, creates required reference files, and validates the skill before reporting success.
 
@@ -93,7 +93,7 @@ The user wants repeatable skill creation without manually copying templates or r
 
 ```text
 User right-clicks a project or folder
-→ selects New → "BuildSkill"
+→ selects New → "SkillOps"
 → enters skill name and description
 → plugin creates .agents/skills/<skill-name>/
 → plugin creates SKILL.md
@@ -111,7 +111,7 @@ User right-clicks a project or folder
 The plugin must add an IntelliJ project-view New-menu action:
 
 ```text
-BuildSkill
+SkillOps
 ```
 
 The action must be available when the user right-clicks:
@@ -126,7 +126,7 @@ The action must not run when there is no open project.
 The plugin must add an IntelliJ project-view context menu action:
 
 ```text
-Validate BuildSkill
+Validate SkillOps
 ```
 
 The action must be available when the selected folder is either:
@@ -307,6 +307,28 @@ Error:
 Could not create skill: A skill folder with this name already exists.
 ```
 
+### 7.11 Run insights
+
+The plugin must add an IntelliJ Tools-menu action:
+
+```text
+Show SkillOps Run Insights
+```
+
+The action must scan recent Codex JSONL session files from the configured Codex home and show a local report with:
+
+- latest session file
+- detected SkillOps skill, when a generated skill is referenced in the session
+- total, input, output, cached input, and reasoning output token counts when available
+- cached input percentage
+- output/input ratio
+- reasoning output percentage
+- repository/search activity count
+- rate-limit usage when available
+- warnings for missing token usage, large session logs, high search activity, and high rate-limit usage
+
+The action must be local-first and must not call OpenAI APIs or remote services.
+
 ## 8. Non-functional requirements
 
 ### 8.1 Local-first
@@ -355,8 +377,8 @@ Publishing operations are documented in the runbook, not implemented as product 
 The first complete version is done when:
 
 - `./gradlew runIde` starts the sandbox IDE
-- `BuildSkill` appears in the project-view New menu
-- `Validate BuildSkill` appears for skill folders
+- `SkillOps` appears in the project-view New menu
+- `Validate SkillOps` appears for skill folders
 - a skill is generated under `.agents/skills/<skill-name>/`
 - `SKILL.md` is generated and small
 - required reference files are generated

@@ -1,6 +1,6 @@
 import org.jetbrains.intellij.platform.gradle.extensions.intellijPlatform
 
-rootProject.name = "buildskill-intellij"
+rootProject.name = "skillops-intellij"
 
 pluginManagement {
     plugins {

@@ -1,8 +1,8 @@
-# Implementation Plan: BuildSkill Intellij for IntelliJ
+# Implementation Plan: SkillOps for IntelliJ IDEA
 
 ## Summary
 
-Build the first version of BuildSkill Intellij as an IntelliJ IDEA plugin that creates and validates repository-scoped Codex/OpenAI skills under:
+Build the first version of SkillOps as an IntelliJ IDEA plugin that creates and validates repository-scoped Codex/OpenAI skills under:
 
 ```text
 .agents/skills/<skill-name>/
@@ -11,7 +11,7 @@ Build the first version of BuildSkill Intellij as an IntelliJ IDEA plugin that c
 The implementation replaces the IntelliJ template package with:
 
 ```text
-com.spmisha134.buildskill
+com.spmisha134.skillops
 ```
 
 Keep IntelliJ-dependent integration separate from pure Kotlin generation and validation logic. The repository follows the sibling `plugin-reference/sonarlint-intellij` structure in a reduced form by package organization, while remaining a single Gradle module.
@@ -19,7 +19,7 @@ Keep IntelliJ-dependent integration separate from pure Kotlin generation and val
 ## Code structure
 
 ```text
-src/main/kotlin/com/spmisha134/buildskill/
+src/main/kotlin/com/spmisha134/skillops/
   actions/          # IntelliJ Action System only
   ui/               # IntelliJ/Swing dialog and form code
   presentation/     # IntelliJ messages and validation result presentation
@@ -32,7 +32,7 @@ src/main/kotlin/com/spmisha134/buildskill/
 src/main/resources/templates/
   generated-skill/  # Templates used by the domain renderers
 
-src/test/kotlin/com/spmisha134/buildskill/
+src/test/kotlin/com/spmisha134/skillops/
   generator/        # Pure domain unit tests
   validator/        # Pure validation unit tests
 ```
@@ -42,11 +42,11 @@ Pure Kotlin packages must not import IntelliJ APIs. IntelliJ actions and dialogs
 ## Implementation changes
 
 - Configure plugin identity:
-  - plugin name: `BuildSkill Intellij`
-  - plugin id: `com.spmisha134.buildskill`
-  - package root: `com.spmisha134.buildskill`
+  - plugin name: `SkillOps`
+  - plugin id: `com.spmisha134.skillops`
+  - package root: `com.spmisha134.skillops`
 - Remove template tool window, startup activity, sample service, sample tests, and related registrations.
-- Add `BuildSkill` under the project-view `New` menu and add `Validate BuildSkill` to validation entry points.
+- Add `SkillOps` under the project-view `New` menu and add `Validate SkillOps` to validation entry points.
 - Add a creation dialog with required fields:
   - skill name
   - description
@@ -145,14 +145,14 @@ Manual sandbox verification:
 
 1. Open a test project.
 2. Right-click the project root.
-3. Select `New → BuildSkill`.
+3. Select `New → SkillOps`.
 4. Fill required fields.
 5. Create the skill.
 6. Confirm files exist under `.agents/skills/<skill-name>/`.
 7. Confirm `SKILL.md` is small.
 8. Confirm reference files are not empty.
 9. Right-click the skill folder.
-10. Select `Validate BuildSkill`.
+10. Select `Validate SkillOps`.
 11. Confirm valid skill passes.
 12. Delete `references/examples.md`.
 13. Validate again.

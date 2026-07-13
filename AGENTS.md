@@ -1,4 +1,4 @@
-# BuildSkill Intellij - Claude Code Guide
+# SkillOps - Claude Code Guide
 
 ## Prerequisites
 
@@ -9,7 +9,7 @@ For local development, JDK 21 and the wrapper are sufficient.
 
 ## Architecture Overview
 
-BuildSkill Intellij is an IntelliJ IDEA plugin that creates and validates repository-scoped Codex/OpenAI skills under:
+SkillOps is an IntelliJ IDEA plugin that creates and validates repository-scoped Codex/OpenAI skills under:
 
 ```text
 .agents/skills/<skill-name>/
@@ -19,7 +19,7 @@ The plugin is local-first and deterministic. It does not call OpenAI APIs, remot
 
 **IntelliJ integration**
 
-- `actions/CreateSkillAction.kt` registers the `New → BuildSkill` entry point.
+- `actions/CreateSkillAction.kt` registers the `New → SkillOps` entry point.
 - `actions/ValidateSkillAction.kt` validates an existing skill folder.
 - `ui/` owns IntelliJ/Swing dialog code.
 - `presentation/` owns IDE messages and validation result presentation.
@@ -34,12 +34,12 @@ The plugin is local-first and deterministic. It does not call OpenAI APIs, remot
 
 | Change area | Start here |
 |---|---|
-| Create action behavior | `src/main/kotlin/com/spmisha134/buildskill/actions/CreateSkillAction.kt` |
-| Validate action behavior | `src/main/kotlin/com/spmisha134/buildskill/actions/ValidateSkillAction.kt` |
-| Dialog fields and validation | `src/main/kotlin/com/spmisha134/buildskill/ui/` |
-| Skill file generation | `src/main/kotlin/com/spmisha134/buildskill/generator/SkillGenerator.kt` |
+| Create action behavior | `src/main/kotlin/com/spmisha134/skillops/actions/CreateSkillAction.kt` |
+| Validate action behavior | `src/main/kotlin/com/spmisha134/skillops/actions/ValidateSkillAction.kt` |
+| Dialog fields and validation | `src/main/kotlin/com/spmisha134/skillops/ui/` |
+| Skill file generation | `src/main/kotlin/com/spmisha134/skillops/generator/SkillGenerator.kt` |
 | Generated templates | `src/main/resources/templates/generated-skill/` |
-| Validation rules | `src/main/kotlin/com/spmisha134/buildskill/validator/rules/` |
+| Validation rules | `src/main/kotlin/com/spmisha134/skillops/validator/rules/` |
 | Product behavior | `docs/product/PRODUCT_REQUIREMENTS.md` |
 
 ## Module Structure

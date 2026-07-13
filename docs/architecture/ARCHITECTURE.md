@@ -1,8 +1,8 @@
-# Architecture: BuildSkill Intellij for IntelliJ
+# Architecture: SkillOps for IntelliJ IDEA
 
 ## 1. Overview
 
-BuildSkill Intellij is an IntelliJ IDEA plugin.
+SkillOps is an IntelliJ IDEA plugin.
 
 The plugin has five responsibilities:
 
@@ -69,7 +69,7 @@ This is a single Gradle module. Follow the SonarLint reference in package organi
 ## 4. Package structure
 
 ```text
-src/main/kotlin/com/spmisha134/buildskill/
+src/main/kotlin/com/spmisha134/skillops/
   actions/
     CreateSkillAction.kt
     ValidateSkillAction.kt
@@ -116,7 +116,7 @@ src/main/resources/
   META-INF/plugin.xml
   templates/
 
-src/test/kotlin/com/spmisha134/buildskill/
+src/test/kotlin/com/spmisha134/skillops/
   generator/
   validator/
 ```
@@ -355,8 +355,8 @@ The plugin integrates through:
 Action names:
 
 ```text
-BuildSkill
-Validate BuildSkill
+SkillOps
+Validate SkillOps
 ```
 
 ## 11. Error handling

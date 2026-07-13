@@ -1,6 +1,6 @@
 <idea-plugin>
-    <id>com.spmisha134.buildskill</id>
-    <name>BuildSkill</name>
+    <id>com.spmisha134.skillops</id>
+    <name>SkillOps</name>
     <vendor>spmisha134</vendor>
     <description><![CDATA[
         <p>Create and validate Codex/OpenAI skills directly inside IntelliJ IDEA.</p>
@@ -8,20 +8,35 @@
 
     <depends>com.intellij.modules.platform</depends>
 
+    <extensions defaultExtensionNs="com.intellij">
+        <applicationConfigurable id="com.spmisha134.skillops.insights.settings"
+                                 displayName="SkillOps Insights"
+                                 instance="com.spmisha134.skillops.insights.settings.SkillOpsInsightsConfigurable"/>
+    </extensions>
+
     <actions>
-        <action id="com.spmisha134.buildskill.NewBuildSkill"
-                class="com.spmisha134.buildskill.actions.CreateSkillAction"
-                text="BuildSkill"
-                description="Create a new Codex skill under .agents/skills.">
+        <action id="com.spmisha134.skillops.NewSkillOps"
+                class="com.spmisha134.skillops.actions.CreateSkillAction"
+                text="SkillOps"
+                description="Create a new Codex skill under .agents/skills."
+                icon="com.spmisha134.skillops.ui.icons.SkillOpsIcons.ACTION">
             <add-to-group group-id="NewGroup" anchor="last"/>
             <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
             <add-to-group group-id="ToolsMenu" anchor="last"/>
         </action>
-        <action id="com.spmisha134.buildskill.ValidateBuildSkill"
-                class="com.spmisha134.buildskill.actions.ValidateSkillAction"
-                text="Validate BuildSkill"
-                description="Validate a Codex skill folder.">
+        <action id="com.spmisha134.skillops.ValidateSkillOps"
+                class="com.spmisha134.skillops.actions.ValidateSkillAction"
+                text="Validate SkillOps"
+                description="Validate a Codex skill folder."
+                icon="com.spmisha134.skillops.ui.icons.SkillOpsIcons.ACTION">
             <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
+            <add-to-group group-id="ToolsMenu" anchor="last"/>
+        </action>
+        <action id="com.spmisha134.skillops.ShowRunInsights"
+                class="com.spmisha134.skillops.actions.ShowRunInsightsAction"
+                text="Show SkillOps Run Insights"
+                description="Show token usage and efficiency metrics from recent Codex sessions."
+                icon="com.spmisha134.skillops.ui.icons.SkillOpsIcons.ACTION">
             <add-to-group group-id="ToolsMenu" anchor="last"/>
         </action>
     </actions>
