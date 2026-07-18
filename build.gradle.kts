@@ -23,9 +23,15 @@ intellijPlatform {
         id = "com.spmisha134.skillops"
         name = "SkillOps"
         description = """
-            <p>Create repository-scoped skills for Codex, Claude Code, and Gemini CLI directly inside IntelliJ IDEA.</p>
-            <p>SkillOps generates platform-specific skill directories, structured <code>SKILL.md</code> content, supporting references, and optional scripts and assets. It also provides local Codex run insights with token usage and efficiency metrics.</p>
-            <p>All generation, validation, and session analysis runs locally. SkillOps does not upload project files, prompts, session logs, credentials, or analytics.</p>
+            <p><strong>Create reliable, repository-scoped skills for Codex, Claude Code, and Gemini CLI without leaving IntelliJ IDEA.</strong></p>
+            <p>SkillOps removes the repetitive setup from skill authoring and helps you understand how Codex sessions use context and tokens.</p>
+            <ul>
+                <li>Create platform-specific skills with structured <code>SKILL.md</code> content and supporting references.</li>
+                <li>Generate optional scripts and assets, plus Codex interface metadata.</li>
+                <li>Validate Codex skills before committing them.</li>
+                <li>Review local Codex run history, token usage, efficiency, rate-limit status, and sessions without skills.</li>
+            </ul>
+            <p><strong>Private by design:</strong> generation, validation, and session analysis run locally. SkillOps does not upload project files, prompts, session logs, credentials, or analytics.</p>
         """.trimIndent()
         changeNotes = """
             <ul>
@@ -38,13 +44,13 @@ intellijPlatform {
         """.trimIndent()
 
         vendor {
-            name = "spmisha134"
+            name = "Sollymanul Islam"
+            email = "spmisha134@gmail.com"
             url = pluginRepositoryUrl
         }
 
         ideaVersion {
             sinceBuild = "252"
-            untilBuild = provider { null }
         }
     }
 

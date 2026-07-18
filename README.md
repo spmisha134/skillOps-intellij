@@ -1,7 +1,7 @@
 SkillOps Plugin
 =================
 
-[![Build Status](https://github.com/spmisha134/skillops-intellij/actions/workflows/build.yml/badge.svg)](https://github.com/spmisha134/skillops-intellij/actions/workflows/build.yml?query=branch%3Amaster)
+[![Build Status](https://github.com/spmisha134/skillOps-intellij/actions/workflows/build.yml/badge.svg)](https://github.com/spmisha134/skillOps-intellij/actions/workflows/build.yml?query=branch%3Amaster)
 
 SkillOps is an IntelliJ IDEA plugin that creates repository-scoped skills for Codex, Claude Code, and Gemini CLI.
 It generates platform-specific skill directories, keeps `SKILL.md` focused, and writes supporting references, scripts, and assets. Codex skills can also be validated and reviewed with local run insights.
@@ -74,15 +74,6 @@ The plugin creates the selected platform's project skill directory (`.agents/ski
         openai.yaml
 ```
 
-Validate a skill from the project view:
-
-```text
-Right-click skill folder
-→ Validate SkillOps
-```
-
-Validation checks the skill location, `SKILL.md` front matter, required reference files, project instruction discovery, safe folder naming, and mandatory `agents/openai.yaml` metadata.
-
 Review token usage and efficiency after a Codex run:
 
 ```text
@@ -101,7 +92,7 @@ Run insights scan recent Codex JSONL sessions from the configured Codex home and
 Questions and Feedback?
 -----------------------
 
-Use GitHub issues in the `skillops-intellij` repository for bugs, workflow problems, and feature requests.
+Use [GitHub Issues](https://github.com/spmisha134/skillOps-intellij/issues) for bugs, workflow problems, and feature requests.
 
 When reporting a problem, include:
 
@@ -159,7 +150,6 @@ Tools → SkillOps → Codex → Create Skill
 Tools → SkillOps → Claude → Create Skill
 Tools → SkillOps → Gemini → Create Skill
 Tools → SkillOps → Codex → Show Run Insights
-Right-click skill folder → Validate SkillOps
 ```
 
 How to develop in IntelliJ

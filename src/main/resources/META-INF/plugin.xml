@@ -1,10 +1,18 @@
 <idea-plugin>
     <id>com.spmisha134.skillops</id>
     <name>SkillOps</name>
-    <vendor>spmisha134</vendor>
+    <vendor email="spmisha134@gmail.com"
+            url="https://github.com/spmisha134/skillOps-intellij">Sollymanul Islam</vendor>
     <description><![CDATA[
-        <p>Create repository-scoped skills for Codex, Claude Code, and Gemini CLI directly inside IntelliJ IDEA.</p>
-        <p>Generation and Codex run analysis stay local; project files and session data are never uploaded.</p>
+        <p><strong>Create reliable, repository-scoped skills for Codex, Claude Code, and Gemini CLI without leaving IntelliJ IDEA.</strong></p>
+        <p>SkillOps removes the repetitive setup from skill authoring and helps you understand how Codex sessions use context and tokens.</p>
+        <ul>
+            <li>Create platform-specific skills with structured <code>SKILL.md</code> content and supporting references.</li>
+            <li>Generate optional scripts and assets, plus Codex interface metadata.</li>
+            <li>Validate Codex skills before committing them.</li>
+            <li>Review local Codex run history, token usage, efficiency, rate-limit status, and sessions without skills.</li>
+        </ul>
+        <p><strong>Private by design:</strong> generation, validation, and session analysis run locally. SkillOps does not upload project files, prompts, session logs, credentials, or analytics.</p>
     ]]></description>
 
     <depends>com.intellij.modules.platform</depends>
