@@ -15,10 +15,13 @@ import com.spmisha134.skillops.presentation.NotificationPresenter
 import com.spmisha134.skillops.presentation.ValidationResultPresenter
 import com.spmisha134.skillops.ui.CreateSkillDialog
 import com.spmisha134.skillops.model.validation.SkillValidationContext
+import com.spmisha134.skillops.model.skill.SkillPlatform
 import com.spmisha134.skillops.validator.SkillValidator
 import java.nio.file.Path
 
-class CreateSkillAction : AnAction() {
+open class CreateSkillAction(
+    private val platform: SkillPlatform = SkillPlatform.CODEX,
+) : AnAction() {
 
     private val generator = SkillGenerator()
     private val validator = SkillValidator()
@@ -55,11 +58,16 @@ class CreateSkillAction : AnAction() {
                     projectBasePath = projectRoot.toString(),
                     selectedDirectoryPath = selectedDirectory?.toString() ?: projectRoot.toString(),
                     skillDefinition = skillDefinition,
+                    platform = platform,
                 )
             )
         }.onSuccess { result ->
             refresh(result.skillDirectoryPath)
-            validateCreatedSkill(project, projectRoot, Path.of(result.skillDirectoryPath))
+            if (platform == SkillPlatform.CODEX) {
+                validateCreatedSkill(project, projectRoot, Path.of(result.skillDirectoryPath))
+            } else {
+                NotificationPresenter.showInfo(project, "${platform.displayName} skill created successfully.")
+            }
         }.onFailure { error ->
             project.showCreateError(exceptionHandler.userMessage(error))
         }
@@ -97,3 +105,7 @@ class CreateSkillAction : AnAction() {
         NotificationPresenter.showError(this, "Could not create skill: $message")
     }
 }
+
+class CreateClaudeSkillAction : CreateSkillAction(SkillPlatform.CLAUDE)
+
+class CreateGeminiSkillAction : CreateSkillAction(SkillPlatform.GEMINI)

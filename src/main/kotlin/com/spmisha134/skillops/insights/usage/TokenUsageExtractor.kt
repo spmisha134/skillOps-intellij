@@ -33,6 +33,7 @@ class TokenUsageExtractor {
     private fun isTokenUsageEvent(event: CodexRawEvent): Boolean {
         val payload = event.payload ?: return false
         return event.type == TOKEN_COUNT_EVENT_TYPE ||
+            payload.objectAt("payload")?.stringAt("type") == TOKEN_COUNT_EVENT_TYPE ||
             payload.containsAny(TOKEN_USAGE_OBJECT_KEYS) ||
             payload.objectAt("payload")?.containsAny(TOKEN_USAGE_OBJECT_KEYS) == true
     }
@@ -42,9 +43,13 @@ class TokenUsageExtractor {
         candidates += payload
         payload.objectAt("payload")?.let(candidates::add)
 
-        val snapshot = candidates.toList()
-        for (candidate in snapshot) {
-            TOKEN_USAGE_OBJECT_KEYS.mapNotNull { key -> candidate.objectAt(key) }.forEach(candidates::add)
+        var index = 0
+        while (index < candidates.size) {
+            val candidate = candidates[index++]
+            TOKEN_USAGE_OBJECT_KEYS
+                .mapNotNull { key -> candidate.objectAt(key) }
+                .filterNot(candidates::contains)
+                .forEach(candidates::add)
         }
 
         val rateLimits = candidates.flatMap { candidate ->
@@ -151,8 +156,15 @@ class TokenUsageExtractor {
             "token_count",
             "tokenCount",
             "usage",
+            "info",
+            "total_token_usage",
+            "totalTokenUsage",
+            "last_token_usage",
+            "lastTokenUsage",
             "rate_limits",
             "rateLimits",
+            "primary",
+            "secondary",
         )
 
         private val INPUT_TOKEN_KEYS = listOf(

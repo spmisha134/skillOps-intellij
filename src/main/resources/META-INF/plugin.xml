@@ -3,7 +3,8 @@
     <name>SkillOps</name>
     <vendor>spmisha134</vendor>
     <description><![CDATA[
-        <p>Create and validate Codex/OpenAI skills directly inside IntelliJ IDEA.</p>
+        <p>Create repository-scoped skills for Codex, Claude Code, and Gemini CLI directly inside IntelliJ IDEA.</p>
+        <p>Generation and Codex run analysis stay local; project files and session data are never uploaded.</p>
     ]]></description>
 
     <depends>com.intellij.modules.platform</depends>
@@ -15,14 +16,42 @@
     </extensions>
 
     <actions>
+        <group id="com.spmisha134.skillops.ToolsGroup"
+               text="SkillOps"
+               popup="true">
+            <add-to-group group-id="ToolsMenu" anchor="last"/>
+        </group>
+        <group id="com.spmisha134.skillops.CodexGroup" text="Codex" popup="true">
+            <add-to-group group-id="com.spmisha134.skillops.ToolsGroup" anchor="last"/>
+        </group>
+        <group id="com.spmisha134.skillops.ClaudeGroup" text="Claude" popup="true">
+            <add-to-group group-id="com.spmisha134.skillops.ToolsGroup" anchor="last"/>
+        </group>
+        <group id="com.spmisha134.skillops.GeminiGroup" text="Gemini" popup="true">
+            <add-to-group group-id="com.spmisha134.skillops.ToolsGroup" anchor="last"/>
+        </group>
         <action id="com.spmisha134.skillops.NewSkillOps"
                 class="com.spmisha134.skillops.actions.CreateSkillAction"
-                text="SkillOps"
+                text="Create Skill"
                 description="Create a new Codex skill under .agents/skills."
                 icon="com.spmisha134.skillops.ui.icons.SkillOpsIcons.ACTION">
             <add-to-group group-id="NewGroup" anchor="last"/>
             <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
-            <add-to-group group-id="ToolsMenu" anchor="last"/>
+            <add-to-group group-id="com.spmisha134.skillops.CodexGroup" anchor="last"/>
+        </action>
+        <action id="com.spmisha134.skillops.CreateClaudeSkill"
+                class="com.spmisha134.skillops.actions.CreateClaudeSkillAction"
+                text="Create Skill"
+                description="Create a Claude Code skill under .claude/skills."
+                icon="com.spmisha134.skillops.ui.icons.SkillOpsIcons.ACTION">
+            <add-to-group group-id="com.spmisha134.skillops.ClaudeGroup" anchor="last"/>
+        </action>
+        <action id="com.spmisha134.skillops.CreateGeminiSkill"
+                class="com.spmisha134.skillops.actions.CreateGeminiSkillAction"
+                text="Create Skill"
+                description="Create a Gemini CLI skill under .gemini/skills."
+                icon="com.spmisha134.skillops.ui.icons.SkillOpsIcons.ACTION">
+            <add-to-group group-id="com.spmisha134.skillops.GeminiGroup" anchor="last"/>
         </action>
         <action id="com.spmisha134.skillops.ValidateSkillOps"
                 class="com.spmisha134.skillops.actions.ValidateSkillAction"
@@ -30,14 +59,13 @@
                 description="Validate a Codex skill folder."
                 icon="com.spmisha134.skillops.ui.icons.SkillOpsIcons.ACTION">
             <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
-            <add-to-group group-id="ToolsMenu" anchor="last"/>
         </action>
         <action id="com.spmisha134.skillops.ShowRunInsights"
                 class="com.spmisha134.skillops.actions.ShowRunInsightsAction"
-                text="Show SkillOps Run Insights"
+                text="Show Run Insights"
                 description="Show token usage and efficiency metrics from recent Codex sessions."
                 icon="com.spmisha134.skillops.ui.icons.SkillOpsIcons.ACTION">
-            <add-to-group group-id="ToolsMenu" anchor="last"/>
+            <add-to-group group-id="com.spmisha134.skillops.CodexGroup" anchor="last"/>
         </action>
     </actions>
 </idea-plugin>

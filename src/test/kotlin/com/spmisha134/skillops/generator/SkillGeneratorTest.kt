@@ -7,6 +7,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
 import java.nio.file.Files
+import com.spmisha134.skillops.model.skill.SkillPlatform
 
 class SkillGeneratorTest {
     @get:Rule
@@ -87,5 +88,29 @@ class SkillGeneratorTest {
 
         SkillGenerator().generate(request)
         SkillGenerator().generate(request)
+    }
+
+    @Test
+    fun `generates claude and gemini skills in platform directories without codex metadata`() {
+        val projectRoot = temporaryFolder.newFolder("multi-platform-project").toPath()
+
+        listOf(
+            SkillPlatform.CLAUDE to ".claude",
+            SkillPlatform.GEMINI to ".gemini",
+        ).forEach { (platform, directory) ->
+            SkillGenerator().generate(
+                SkillGenerationRequest(
+                    projectBasePath = projectRoot.toString(),
+                    selectedDirectoryPath = projectRoot.toString(),
+                    skillDefinition = testDefinition(name = "${platform.name.lowercase()} skill"),
+                    platform = platform,
+                )
+            )
+
+            val skillDirectory = projectRoot.resolve("$directory/skills/${platform.name.lowercase()}-skill")
+            assertTrue(Files.exists(skillDirectory.resolve("SKILL.md")))
+            assertTrue(Files.exists(skillDirectory.resolve("references/instructions.md")))
+            assertFalse(Files.exists(skillDirectory.resolve("agents/openai.yaml")))
+        }
     }
 }

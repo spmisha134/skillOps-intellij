@@ -9,6 +9,11 @@ import java.time.format.DateTimeFormatter
 
 class RunInsightsReportFormatter {
     fun format(report: SkillOpsRunInsightsReport): String {
+        val selectedInsight = report.latestInsight
+        if (selectedInsight != null) {
+            return format(selectedInsight)
+        }
+
         val lines = mutableListOf<String>()
         lines += "SkillOps Run Insights"
         lines += ""
@@ -19,54 +24,80 @@ class RunInsightsReportFormatter {
             lines += ""
         }
 
-        if (report.insights.isEmpty()) {
-            lines += "No Codex sessions were found."
-            return lines.joinToString("\n")
-        }
+        lines += "No Codex sessions were found for this project."
+        return lines.joinToString("\n")
+    }
 
-        report.latestInsight?.let { latest ->
-            lines += "Latest session"
-            lines += "Skill: ${latest.matchedSkillName ?: "No SkillOps skill detected"}"
-            lines += "Session: ${latest.sessionFileName}"
-            lines += "Updated: ${formatInstant(latest.lastModifiedMs)}"
-            lines += "Tokens: ${latest.tokenUsage.formatTokens()}"
-            lines += "Efficiency: ${latest.formatEfficiency()}"
-            latest.warnings.forEach { warning -> lines += "Warning: $warning" }
+    fun format(insight: SkillRunInsight): String {
+        val lines = mutableListOf<String>()
+        lines += "Skill: ${skillNames(insight).joinToString()}"
+        lines += "Updated: ${formatInstant(insight.lastModifiedMs)}"
+        insight.invocationCommand?.let { lines += "Command: $it" }
+        lines += ""
+        lines += "Tokens"
+        lines += insight.tokenUsage.formatTokenLines()
+        lines += ""
+        lines += "Efficiency"
+        lines += insight.formatEfficiencyLines()
+
+        if (insight.warnings.isNotEmpty()) {
             lines += ""
-        }
-
-        lines += "Recent sessions"
-        report.insights.drop(1).take(MAX_RECENT_SESSIONS).forEach { insight ->
-            lines += "- ${insight.sessionFileName}: ${insight.matchedSkillName ?: "no skill detected"}, ${insight.tokenUsage.formatTokens()}"
+            lines += "Notes"
+            insight.warnings.forEach { warning ->
+                lines += "- $warning"
+                lines += "  How to improve: ${warning.improvementAdvice()}"
+            }
         }
 
         return lines.joinToString("\n")
     }
 
-    private fun SkillRunInsight.formatEfficiency(): String {
-        val parts = listOfNotNull(
-            efficiencySummary.outputInputRatio?.let { "output/input ${formatDecimal(it)}" },
-            efficiencySummary.cachedInputPercent?.let { "cached input ${formatPercent(it)}" },
-            efficiencySummary.reasoningOutputPercent?.let { "reasoning output ${formatPercent(it)}" },
-            "searches ${efficiencySummary.searchCount}",
-        )
-        return parts.joinToString(", ")
+    fun selectionLabel(insight: SkillRunInsight): String {
+        return skillNames(insight).joinToString()
     }
 
-    private fun TokenUsage?.formatTokens(): String {
+    fun skillNames(insight: SkillRunInsight): List<String> =
+        insight.displaySkillNames().ifEmpty { listOf(NO_SKILL_LABEL) }
+
+    fun runLabel(insight: SkillRunInsight): String = formatInstant(insight.lastModifiedMs)
+
+    private fun SkillRunInsight.displaySkillNames(): List<String> =
+        (matchedSkillNames + recordedSkillNames).distinctBy(String::lowercase)
+
+    private fun SkillRunInsight.formatEfficiencyLines(): List<String> =
+        listOfNotNull(
+            efficiencySummary.outputInputRatio?.let { "- Output/input ratio: ${formatDecimal(it)}" },
+            efficiencySummary.cachedInputPercent?.let { "- Cached input: ${formatPercent(it)}" },
+            efficiencySummary.reasoningOutputPercent?.let { "- Reasoning output: ${formatPercent(it)}" },
+            "- Searches: ${efficiencySummary.searchCount}",
+        )
+
+    private fun TokenUsage?.formatTokenLines(): List<String> {
         if (this == null) {
-            return "not found"
+            return listOf("- Not available")
         }
 
-        val parts = listOfNotNull(
-            totalTokens?.let { "total ${formatLong(it)}" },
-            inputTokens?.let { "input ${formatLong(it)}" },
-            outputTokens?.let { "output ${formatLong(it)}" },
-            cachedInputTokens?.let { "cached ${formatLong(it)}" },
-            reasoningOutputTokens?.let { "reasoning ${formatLong(it)}" },
-            rateLimitUsedPercent?.let { "rate limit ${formatPercent(it)}" },
+        return listOfNotNull(
+            totalTokens?.let { "- Total: ${formatLong(it)}" },
+            inputTokens?.let { "- Input: ${formatLong(it)}" },
+            outputTokens?.let { "- Output: ${formatLong(it)}" },
+            cachedInputTokens?.let { "- Cached: ${formatLong(it)}" },
+            reasoningOutputTokens?.let { "- Reasoning: ${formatLong(it)}" },
+            rateLimitUsedPercent?.let { "- Rate limit: ${formatPercent(it)}" },
         )
-        return parts.ifEmpty { listOf("token event found, no totals") }.joinToString(", ")
+            .ifEmpty { listOf("- Token event found, but totals were unavailable") }
+    }
+
+    private fun String.improvementAdvice(): String = when {
+        startsWith("Session log is very large") || startsWith("Session log is large") ->
+            "Start a new Codex session for a separate task and avoid returning unnecessarily large command output."
+        startsWith("High repository/search activity") ->
+            "Narrow the request and point Codex to the relevant files or package when they are known."
+        startsWith("Rate limit usage is high") ->
+            "Wait for the rate-limit window to reset or reduce repeated large-context requests."
+        startsWith("No token usage event") ->
+            "Let the Codex turn finish, then reopen Run Insights so its final token event can be read."
+        else -> "Review the session scope and run a smaller, focused Codex task."
     }
 
     private fun formatLong(value: Long): String =
@@ -84,6 +115,7 @@ class RunInsightsReportFormatter {
         )
 
     companion object {
-        private const val MAX_RECENT_SESSIONS = 9
+        const val NO_SKILL_LABEL = "No skill"
     }
+
 }

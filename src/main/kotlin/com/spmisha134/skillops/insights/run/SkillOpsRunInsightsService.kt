@@ -12,6 +12,7 @@ class SkillOpsRunInsightsService(
     private val tokenUsageExtractor: TokenUsageExtractor = TokenUsageExtractor(),
     private val skillCatalog: SkillCatalog = SkillCatalog(),
     private val skillUsageMatcher: SkillUsageMatcher = SkillUsageMatcher(),
+    private val projectSessionMatcher: ProjectSessionMatcher = ProjectSessionMatcher(),
     private val efficiencySummaryCalculator: EfficiencySummaryCalculator = EfficiencySummaryCalculator(),
 ) {
     fun buildReport(
@@ -27,10 +28,21 @@ class SkillOpsRunInsightsService(
             warnings += "No SkillOps skills found under .agents/skills/."
         }
 
-        val insights = scanResult.files.map { sessionFile ->
-            val parseResult = parser.parse(sessionFile.path)
+        val parsedSessions = scanResult.files.map { sessionFile ->
+            sessionFile to parser.parse(sessionFile.path)
+        }
+        val projectSessions = parsedSessions.filter { (_, parseResult) ->
+            projectSessionMatcher.belongsToProject(parseResult.events, projectRoot) != false
+        }
+        val skippedSessionCount = parsedSessions.size - projectSessions.size
+        if (skippedSessionCount > 0) {
+            warnings += "Ignored $skippedSessionCount Codex session(s) belonging to other projects."
+        }
+
+        val insights = projectSessions.map { (sessionFile, parseResult) ->
             val tokenUsage = tokenUsageExtractor.extract(parseResult.events)
-            val matchedSkillName = skillUsageMatcher.matchSkill(parseResult.events, skillNames)
+            val matchedSkillNames = skillUsageMatcher.matchSkills(parseResult.events, skillNames)
+            val recordedSkillNames = skillUsageMatcher.detectRecordedSkillNames(parseResult.events)
             val efficiencySummary = efficiencySummaryCalculator.calculate(
                 events = parseResult.events,
                 tokenUsage = tokenUsage,
@@ -43,7 +55,10 @@ class SkillOpsRunInsightsService(
                 sessionFileName = sessionFile.fileName,
                 lastModifiedMs = sessionFile.lastModifiedMs,
                 sizeBytes = sessionFile.sizeBytes,
-                matchedSkillName = matchedSkillName,
+                matchedSkillName = matchedSkillNames.firstOrNull(),
+                matchedSkillNames = matchedSkillNames,
+                recordedSkillNames = recordedSkillNames.ifEmpty { matchedSkillNames },
+                invocationCommand = skillUsageMatcher.invocationCommand(parseResult.events),
                 tokenUsage = tokenUsage,
                 efficiencySummary = efficiencySummary,
                 warnings = parseResult.warnings + efficiencySummary.warnings,

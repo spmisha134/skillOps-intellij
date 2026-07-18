@@ -12,4 +12,7 @@ data class SkillRunInsight(
     val tokenUsage: TokenUsage?,
     val efficiencySummary: EfficiencySummary,
     val warnings: List<String>,
+    val matchedSkillNames: List<String> = listOfNotNull(matchedSkillName),
+    val recordedSkillNames: List<String> = matchedSkillNames,
+    val invocationCommand: String? = null,
 )

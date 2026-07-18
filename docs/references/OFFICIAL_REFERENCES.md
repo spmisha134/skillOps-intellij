@@ -15,6 +15,26 @@ Key points used by this project:
 - `SKILL.md` should be the entrypoint and can refer to supporting files.
 - Skills can be selected implicitly or explicitly in Codex.
 
+## Claude Code skills
+
+Official Claude Code skills documentation:
+
+```text
+https://code.claude.com/docs/en/skills
+```
+
+Project skills are stored under `.claude/skills/<skill-name>/SKILL.md`.
+
+## Gemini CLI skills
+
+Official Gemini CLI skills documentation:
+
+```text
+https://geminicli.com/docs/cli/skills/
+```
+
+Project skills are stored under `.gemini/skills/<skill-name>/SKILL.md`.
+
 ## IntelliJ plugin publishing
 
 Official JetBrains plugin publishing documentation:

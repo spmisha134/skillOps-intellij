@@ -99,6 +99,22 @@ class TokenUsageExtractorTest {
         assertEquals("2026-07-04T12:30:00Z", usage?.rateLimitResetAt)
     }
 
+    @Test
+    fun `extracts current codex event message token schema`() {
+        val events = parseEvents(
+            """{"type":"event_msg","payload":{"type":"token_count","info":{"total_token_usage":{"input_tokens":217197,"cached_input_tokens":192256,"output_tokens":2021,"reasoning_output_tokens":637,"total_tokens":219218},"last_token_usage":{"input_tokens":29865,"cached_input_tokens":29440,"output_tokens":189,"reasoning_output_tokens":53,"total_tokens":30054}},"rate_limits":{"primary":{"used_percent":4.0,"resets_at":1784974038}}}}""",
+        )
+
+        val usage = TokenUsageExtractor().extract(events)
+
+        assertEquals(217_197L, usage?.inputTokens)
+        assertEquals(192_256L, usage?.cachedInputTokens)
+        assertEquals(2_021L, usage?.outputTokens)
+        assertEquals(637L, usage?.reasoningOutputTokens)
+        assertEquals(219_218L, usage?.totalTokens)
+        assertEquals(4.0, usage?.rateLimitUsedPercent)
+    }
+
     private fun parseEvents(vararg lines: String) =
         CodexJsonlParser().parse(temporaryFile(lines.joinToString(separator = "\n", postfix = "\n"))).events
 

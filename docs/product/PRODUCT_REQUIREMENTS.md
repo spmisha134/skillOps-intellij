@@ -309,10 +309,17 @@ Could not create skill: A skill folder with this name already exists.
 
 ### 7.11 Run insights
 
-The plugin must add an IntelliJ Tools-menu action:
+The plugin must add an IntelliJ Tools-menu submenu:
 
 ```text
-Show SkillOps Run Insights
+SkillOps
+├── Codex
+│   └── Create Skill
+├── Claude
+│   └── Create Skill
+├── Gemini
+│   └── Create Skill
+└── Show Run Insights
 ```
 
 The action must scan recent Codex JSONL session files from the configured Codex home and show a local report with:

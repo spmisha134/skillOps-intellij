@@ -55,7 +55,7 @@ Default package: com.spmisha134.skillops
 Recommended plugin description:
 
 ```text
-Create and validate Codex/OpenAI skills directly inside IntelliJ IDEA.
+Create repository-scoped skills for Codex, Claude Code, and Gemini CLI directly inside IntelliJ IDEA.
 ```
 
 ## 4. Manual installation from local build
@@ -76,6 +76,19 @@ IntelliJ IDEA
 → Install Plugin from Disk...
 → Select ZIP from build/distributions/
 ```
+
+### Clean-profile verification
+
+Before uploading a release candidate:
+
+1. Start IntelliJ IDEA with a new configuration directory or use a separate clean IDE profile.
+2. Install only the ZIP from `build/distributions/`.
+3. Restart the IDE when requested.
+4. Open a disposable repository and verify Codex, Claude, and Gemini skill creation.
+5. Run a Codex skill and confirm its run history, invocation command, token usage, and efficiency metrics.
+6. Confirm the IDE log contains no `Plugin 'SkillOps' failed to load` or `Cannot load com.spmisha134.skillops` errors.
+
+Do not use a real project or real session details in Marketplace screenshots. Use a disposable repository and generic skill names.
 
 ## 5. Manual first publication
 
@@ -172,9 +185,14 @@ Before creating a release:
 - [ ] `./gradlew check` passes
 - [ ] `./gradlew buildPlugin` succeeds
 - [ ] Plugin ZIP installs manually
-- [ ] `New → SkillOps` action works
+- [ ] `Tools → SkillOps → Codex → Create Skill` works
+- [ ] `Tools → SkillOps → Claude → Create Skill` works
+- [ ] `Tools → SkillOps → Gemini → Create Skill` works
+- [ ] `Tools → SkillOps → Codex → Show Run Insights` works
 - [ ] `Validate SkillOps` action works
 - [ ] Generated skill is created under `.agents/skills/<skill-name>/`
+- [ ] Claude skill is created under `.claude/skills/<skill-name>/`
+- [ ] Gemini skill is created under `.gemini/skills/<skill-name>/`
 - [ ] Generated `SKILL.md` is small
 - [ ] Generated reference files are created
 - [ ] Generated `agents/openai.yaml` is created

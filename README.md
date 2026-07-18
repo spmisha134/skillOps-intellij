@@ -3,8 +3,16 @@ SkillOps Plugin
 
 [![Build Status](https://github.com/spmisha134/skillops-intellij/actions/workflows/build.yml/badge.svg)](https://github.com/spmisha134/skillops-intellij/actions/workflows/build.yml?query=branch%3Amaster)
 
-SkillOps is an IntelliJ IDEA plugin that creates and validates repository-scoped Codex/OpenAI skills.
-It generates `.agents/skills/<skill-name>/`, keeps `SKILL.md` small, writes the supporting reference files, and validates the result before the skill is used or committed.
+SkillOps is an IntelliJ IDEA plugin that creates repository-scoped skills for Codex, Claude Code, and Gemini CLI.
+It generates platform-specific skill directories, keeps `SKILL.md` focused, and writes supporting references, scripts, and assets. Codex skills can also be validated and reviewed with local run insights.
+
+SkillOps works locally and does not upload project files, prompts, session logs, credentials, or analytics.
+
+![SkillOps Run Insights](docs/images/skillops-run-insights.png)
+
+SkillOps also reports Codex sessions that did not invoke a skill. These appear under `No skill`, while the Run dropdown provides the timestamped history for each separate session.
+
+![SkillOps analytics for a session without a skill](docs/images/skillops-no-skill-run-insights.png)
 
 Useful links
 ------------
@@ -43,12 +51,13 @@ How to use
 Create a skill from the IntelliJ project view:
 
 ```text
-Right-click project or folder
-→ New
+Tools
 → SkillOps
+→ Codex, Claude, or Gemini
+→ Create Skill
 ```
 
-The plugin creates:
+The plugin creates the selected platform's project skill directory (`.agents/skills/` for Codex, `.claude/skills/` for Claude, or `.gemini/skills/` for Gemini). A Codex skill contains:
 
 ```text
 .agents/
@@ -78,10 +87,16 @@ Review token usage and efficiency after a Codex run:
 
 ```text
 Tools
-→ Show SkillOps Run Insights
+→ SkillOps
+→ Codex
+→ Show Run Insights
 ```
 
-Run insights scan recent Codex JSONL sessions from the configured Codex home, detect whether a generated SkillOps skill appears in the session, and show token totals, input/output split, cached-token percentage, reasoning-token percentage, repository/search activity, rate-limit status, and session-size warnings.
+Open the IntelliJ **Tools** menu and follow the nested SkillOps and Codex menus:
+
+![Open Codex Run Insights from the IntelliJ Tools menu](docs/images/skillops-tools-menu.png)
+
+Run insights scan recent Codex JSONL sessions from the configured Codex home and show token totals, input/output split, cached-token percentage, reasoning-token percentage, repository/search activity, rate-limit status, and session-size warnings. Skill runs are grouped by skill name; ordinary project sessions remain available under `No skill`, with separate timestamped history entries.
 
 Questions and Feedback?
 -----------------------
@@ -99,7 +114,7 @@ When reporting a problem, include:
 Contributing
 ------------
 
-Before contributing, read:
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the development workflow and pull-request checklist. Before contributing, read:
 
 - [AGENTS.md](AGENTS.md)
 - [Product requirements](docs/product/PRODUCT_REQUIREMENTS.md)
@@ -140,7 +155,10 @@ Manual IDE verification is done with:
 Then verify:
 
 ```text
-Right-click project/folder → New → SkillOps
+Tools → SkillOps → Codex → Create Skill
+Tools → SkillOps → Claude → Create Skill
+Tools → SkillOps → Gemini → Create Skill
+Tools → SkillOps → Codex → Show Run Insights
 Right-click skill folder → Validate SkillOps
 ```
 

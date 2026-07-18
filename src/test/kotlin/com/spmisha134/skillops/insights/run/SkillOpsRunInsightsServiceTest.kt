@@ -24,7 +24,7 @@ class SkillOpsRunInsightsServiceTest {
         Files.writeString(
             sessionFile,
             """
-            {"type":"message","payload":{"text":"Using .agents/skills/kafka-review/SKILL.md"}}
+            {"type":"response_item","payload":{"type":"message","role":"user","content":[{"text":"Using .agents/skills/kafka-review/SKILL.md"}]}}
             {"type":"token_count","payload":{"usage":{"input_tokens":100,"output_tokens":25,"cached_input_tokens":50}}}
             """.trimIndent() + "\n",
         )
@@ -54,5 +54,37 @@ class SkillOpsRunInsightsServiceTest {
         )
 
         assertTrue(report.warnings.any { it.contains("No SkillOps skills") })
+    }
+
+    @Test
+    fun `ignores sessions belonging to another project`() {
+        val projectRoot = temporaryFolder.newFolder("project-with-skill").toPath()
+        Files.createDirectories(projectRoot.resolve(".agents/skills/kafka-review"))
+        val otherProject = temporaryFolder.newFolder("other-project").toPath()
+        val codexHome = temporaryFolder.newFolder("codex-project-filter").toPath()
+        val sessions = Files.createDirectories(codexHome.resolve("sessions"))
+
+        Files.writeString(
+            sessions.resolve("rollout-current.jsonl"),
+            """{"type":"session_meta","payload":{"cwd":"$projectRoot"}}
+{"type":"response_item","payload":{"type":"message","role":"user","content":[{"text":"Using .agents/skills/kafka-review/SKILL.md"}]}}
+""",
+        )
+        Files.writeString(
+            sessions.resolve("rollout-other.jsonl"),
+            """{"type":"session_meta","payload":{"cwd":"$otherProject"}}
+{"type":"message","payload":{"text":"unrelated session"}}
+""",
+        )
+
+        val report = SkillOpsRunInsightsService().buildReport(
+            projectRoot = projectRoot,
+            settings = SkillOpsInsightsSettings(codexHomePath = codexHome.toString()),
+        )
+
+        assertEquals(1, report.insights.size)
+        assertEquals("rollout-current.jsonl", report.latestInsight?.sessionFileName)
+        assertEquals("kafka-review", report.latestInsight?.matchedSkillName)
+        assertTrue(report.warnings.any { it.contains("Ignored 1 Codex session") })
     }
 }

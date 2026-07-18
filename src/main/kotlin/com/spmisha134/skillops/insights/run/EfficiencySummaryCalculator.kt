@@ -17,11 +17,10 @@ class EfficiencySummaryCalculator {
         if (tokenUsage == null) {
             warnings += "No token usage event found in this session."
         }
-        if (sizeBytes >= settings.largeOutputWarningBytes) {
-            warnings += "Session log is large (${sizeBytes} bytes)."
-        }
         if (sizeBytes >= settings.highOutputWarningBytes) {
             warnings += "Session log is very large (${sizeBytes} bytes)."
+        } else if (sizeBytes >= settings.largeOutputWarningBytes) {
+            warnings += "Session log is large (${sizeBytes} bytes)."
         }
         if (searchCount >= settings.manySearchesThreshold) {
             warnings += "High repository/search activity detected ($searchCount searches)."

@@ -4,6 +4,7 @@ import com.spmisha134.skillops.generator.openai.OpenAiYamlRenderer
 import com.spmisha134.skillops.model.generation.SkillGenerationRequest
 import com.spmisha134.skillops.model.generation.SkillGenerationResult
 import com.spmisha134.skillops.model.validation.SkillValidationPaths
+import com.spmisha134.skillops.model.skill.SkillPlatform
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.createDirectories
@@ -18,7 +19,7 @@ class SkillGenerator(
     fun generate(request: SkillGenerationRequest): SkillGenerationResult {
         val definition = request.skillDefinition
         val normalizedName = SkillNameNormalizer.normalize(definition.name)
-        val skillDirectory = pathResolver.resolveSkillDirectory(request.projectBasePath, normalizedName)
+        val skillDirectory = pathResolver.resolveSkillDirectory(request.projectBasePath, normalizedName, request.platform)
 
         if (Files.exists(skillDirectory)) {
             throw SkillGenerationException("A skill folder with this name already exists.")
@@ -41,8 +42,10 @@ class SkillGenerator(
         if (definition.createAssetsDirectory) {
             createDirectory(skillDirectory.resolve(SkillValidationPaths.ASSETS_DIRECTORY), createdDirectories)
         }
-        val agentsDirectory = createDirectory(skillDirectory.resolve(SkillValidationPaths.AGENT_DIRECTORY), createdDirectories)
-        writeFile(agentsDirectory.resolve(SkillValidationPaths.OPENAI_YAML_FILE), openAiYamlRenderer.render(definition), createdFiles)
+        if (request.platform == SkillPlatform.CODEX) {
+            val agentsDirectory = createDirectory(skillDirectory.resolve(SkillValidationPaths.AGENT_DIRECTORY), createdDirectories)
+            writeFile(agentsDirectory.resolve(SkillValidationPaths.OPENAI_YAML_FILE), openAiYamlRenderer.render(definition), createdFiles)
+        }
 
         val skillMdPath = skillDirectory.resolve(SkillValidationPaths.SKILL_MD)
         return SkillGenerationResult(
