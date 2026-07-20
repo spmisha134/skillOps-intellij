@@ -2,9 +2,10 @@ SkillOps Plugin
 =================
 
 [![Build Status](https://github.com/spmisha134/skillOps-intellij/actions/workflows/build.yml/badge.svg)](https://github.com/spmisha134/skillOps-intellij/actions/workflows/build.yml?query=branch%3Amaster)
+[![JetBrains Marketplace](https://img.shields.io/jetbrains/plugin/v/32994-skillops.svg?label=JetBrains%20Marketplace)](https://plugins.jetbrains.com/plugin/32994-skillops)
 
 SkillOps is an IntelliJ IDEA plugin that creates repository-scoped skills for Codex, Claude Code, and Gemini CLI.
-It generates platform-specific skill directories, keeps `SKILL.md` focused, and writes supporting references, scripts, and assets. Codex skills can also be validated and reviewed with local run insights.
+It generates platform-specific skill directories, keeps `SKILL.md` focused, and writes supporting references, scripts, and assets. Codex runs can also be reviewed with local run insights.
 
 SkillOps works locally and does not upload project files, prompts, session logs, credentials, or analytics.
 
@@ -18,32 +19,29 @@ Useful links
 ------------
 
 - [Product requirements](docs/product/PRODUCT_REQUIREMENTS.md)
-    - Defines the user workflow, generated skill structure, validation behavior, and out-of-scope product behavior.
+    - Defines the user workflow, generated skill structure, and out-of-scope product behavior.
 - [Architecture](docs/architecture/ARCHITECTURE.md)
-    - Documents package boundaries between IntelliJ integration, generation, validation, and presentation.
+    - Documents package boundaries between IntelliJ integration, generation, insights, and presentation.
 - [Development and publishing runbook](docs/development/RUNBOOK.md)
     - Describes local verification, packaging, release, signing, and Marketplace publication steps.
+- [SkillOps on JetBrains Marketplace](https://plugins.jetbrains.com/plugin/32994-skillops)
+    - Install the latest public release and view compatibility information.
 
 How to install
 --------------
 
-SkillOps is installed from a local plugin ZIP until the first JetBrains Marketplace release is published.
-
-Build the plugin:
-
-```bash
-./gradlew buildPlugin
-```
-
-Install the generated ZIP from `build/distributions/` using the IDE preferences:
+Install SkillOps directly from JetBrains Marketplace using the IDE preferences:
 
 ```text
 IntelliJ IDEA
 → Settings/Preferences
 → Plugins
-→ ⚙️
-→ Install Plugin from Disk...
+→ Marketplace
+→ Search for "SkillOps"
+→ Install
 ```
+
+You can also open the [public SkillOps Marketplace page](https://plugins.jetbrains.com/plugin/32994-skillops).
 
 How to use
 ----------
