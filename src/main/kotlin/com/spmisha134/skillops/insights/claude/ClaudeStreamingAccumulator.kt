@@ -1,6 +1,7 @@
 package com.spmisha134.skillops.insights.claude
 
 import com.spmisha134.skillops.insights.parser.RawInsightEvent
+import com.spmisha134.skillops.insights.parser.InsightTimestamp
 import com.spmisha134.skillops.insights.usage.TokenUsage
 import com.spmisha134.skillops.sessions.model.SessionResumeTarget
 import java.nio.file.Path
@@ -20,8 +21,12 @@ class ClaudeStreamingAccumulator(
     private var workingDirectory: Path? = null
     private var searchCount = 0
     private var toolCallCount = 0
+    private var latestEventTimestampMs: Long? = null
 
     fun accept(event: RawInsightEvent) {
+        InsightTimestamp.parseMillis(event.timestamp)?.let { timestamp ->
+            latestEventTimestampMs = maxOf(latestEventTimestampMs ?: Long.MIN_VALUE, timestamp)
+        }
         val payload = event.payload ?: return
         val text = payload.toString()
         val lower = text.lowercase()
@@ -90,6 +95,7 @@ class ClaudeStreamingAccumulator(
     fun recordedSkills(): List<String> = attributedSkills.toList()
     fun invocationCommand(): String? = invocation
     fun counts(): Pair<Int, Int> = searchCount to toolCallCount
+    fun lastActivityMs(): Long? = latestEventTimestampMs
     fun resumeTarget(fileName: String): SessionResumeTarget? {
         val id = sessionId ?: fileName.removeSuffix(".jsonl").takeIf(String::isNotBlank) ?: return null
         return SessionResumeTarget(id, workingDirectory)

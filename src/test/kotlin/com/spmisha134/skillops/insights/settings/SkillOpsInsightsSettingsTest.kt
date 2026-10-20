@@ -10,7 +10,7 @@ class SkillOpsInsightsSettingsTest {
         val settings = SkillOpsInsightsSettings()
 
         assertEquals("~/.codex", settings.codexHomePath)
-        assertEquals(200, settings.maxSessionsToScan)
+        assertEquals(250, settings.maxSessionsToScan)
         assertEquals(true, settings.autoRefreshEnabled)
         assertEquals(10, settings.refreshIntervalSeconds)
         assertEquals(30, settings.completedRunQuietPeriodSeconds)

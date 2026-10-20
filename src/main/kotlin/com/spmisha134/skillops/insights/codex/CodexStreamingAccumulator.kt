@@ -1,6 +1,7 @@
 package com.spmisha134.skillops.insights.codex
 
 import com.spmisha134.skillops.insights.parser.RawInsightEvent
+import com.spmisha134.skillops.insights.parser.InsightTimestamp
 import com.spmisha134.skillops.insights.usage.TokenUsage
 import com.spmisha134.skillops.sessions.model.CodexSessionMetadata
 import com.spmisha134.skillops.sessions.discovery.CodexPromptSummary
@@ -27,8 +28,12 @@ class CodexStreamingAccumulator(
     private val userPrompts = mutableListOf<String>()
     private var searchCount = 0
     private var toolCallCount = 0
+    private var latestEventTimestampMs: Long? = null
 
     fun accept(event: RawInsightEvent) {
+        InsightTimestamp.parseMillis(event.timestamp)?.let { timestamp ->
+            latestEventTimestampMs = maxOf(latestEventTimestampMs ?: Long.MIN_VALUE, timestamp)
+        }
         val text = event.payload?.toString().orEmpty()
         val lowerText = text.lowercase()
         updateProjectMatch(event)
@@ -80,6 +85,8 @@ class CodexStreamingAccumulator(
     fun prompts(): List<String> = userPrompts.toList()
 
     fun efficiencyCounts(): Pair<Int, Int> = searchCount to toolCallCount
+
+    fun lastActivityMs(): Long? = latestEventTimestampMs
 
     fun resumeMetadata(fileName: String): CodexSessionMetadata? {
         val id = sessionId?.takeIf(::isUuid)

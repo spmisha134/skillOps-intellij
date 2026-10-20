@@ -38,6 +38,8 @@ The plugin can generate `.agents/skills/<skill-name>/`, render `SKILL.md`, rende
 | Run insights workflow | Done | `Show SkillOps Run Insights` scans recent Codex JSONL sessions, matches generated SkillOps skill references, extracts token usage, calculates efficiency metrics, and shows a scrollable IDE report. Codex-specific implementation is isolated under `insights/codex`; neutral JSONL parsing and report models remain shared. | `CodexRunInsightsServiceTest`, `CodexSkillUsageMatcherTest`, `CodexEfficiencySummaryCalculatorTest`, `RunInsightsReportFormatterTest`, `./gradlew check`, `./gradlew buildPlugin`, and `./gradlew verifyPlugin`. |
 | Claude run insights | Done | `Tools → SkillOps → Claude → Show Run Insights` scans local Claude transcripts, filters by project `cwd`, merges subagents, deduplicates assistant calls, matches `attributionSkill`, and reports input/output/cache/tool/search metrics without external dependencies. | `ClaudeSessionFileScannerTest`, `ClaudeUsageExtractorTest`, and `ClaudeRunInsightsServiceTest`. |
 | Gemini run insights | Done | `Tools → SkillOps → Gemini → Show Run Insights` maps cached sessions through `.project_root`, aggregates Gemini's recorded token categories, matches `activate_skill`, and reports tool/search metrics without external dependencies. | `GeminiSessionFileScannerTest`, `GeminiUsageExtractorTest`, and `GeminiRunInsightsServiceTest`. |
+| Resume Codex sessions | Done | `Tools → SkillOps → Codex → Resume Session` discovers project-owned local Codex sessions, extracts the explicit user task, supports search and selection, shows the exact `codex resume <session-id>` command, and launches a new terminal in the recorded working directory. Run Insights can resume the selected Codex session and copy its ID. | `CodexSessionServiceTest`, `CodexSessionMetadataExtractorTest`, `CodexResumeCommandTest`; manual IDE verification is still required for terminal focus and menu wiring. |
+| Resume Claude sessions | Done | `Tools → SkillOps → Claude → Resume Session` discovers project-owned local Claude transcripts, supports search and selection, shows the exact resume command, and launches a new terminal. It also supports `claude --continue`, the session picker, named sessions, Run Insights resume, and copy-session-ID behavior. | `ClaudeSessionServiceTest`, `ClaudeResumeCommandTest`; manual IDE verification is still required for transcript discovery and terminal behavior. |
 | User feedback | Done | Creation and validation paths show success, warning, or error dialogs with actionable messages. | Code reviewed in presenters and exception handler; manual UI check recommended for exact IDE wording. |
 | Local-first deterministic behavior | Done | Generation and validation use local templates and deterministic Kotlin logic; no runtime network or AI calls. | Dependency/code review; no OpenAI API or remote documentation calls are present. |
 | Documentation branding consistency | Done | User-facing docs, project instructions, changelog, and foundation spec use `SkillOps` as the display name. | `rg -n "SkillOps Intelli[j]" .` returns no matches. |
@@ -57,6 +59,7 @@ The plugin can generate `.agents/skills/<skill-name>/`, render `SKILL.md`, rende
 | 2026-07-04 | Keep specs insights in `docs/development/SPECS_INSIGHTS.md`. | Slice progress and implementation results are development state, separate from product requirements and architecture docs. |
 | 2026-07-04 | Keep `.agents/skills/` reserved for generated skills and fixtures. | Progress tracking should not be mixed with product output directories. |
 | 2026-07-27 | Isolate Codex insights in `insights/codex`. | Each provider owns its session format logic; only neutral parsing, report models, settings, and presentation are shared. |
+| 2026-08-07 | Keep Codex and Claude resume flows under shared `sessions/` boundaries. | The user workflow and terminal integration are shared concepts, while transcript formats, discovery rules, and command variants remain provider-specific. |
 
 ## Open Questions
 
@@ -96,3 +99,8 @@ The plugin can generate `.agents/skills/<skill-name>/`, render `SKILL.md`, rende
 - [ ] Confirm `Tools → SkillOps → Claude → Show Run Insights` opens a report from a real local Claude session.
 - [ ] Confirm `Tools → SkillOps → Gemini → Show Run Insights` opens a report from a real local Gemini session.
 - [ ] Confirm the report shows token usage and detected skill for the latest session.
+- [ ] Confirm `Tools → SkillOps → Codex → Resume Session` finds the current project's sessions, shows the explicit task, and launches `codex resume <session-id>` in a new terminal.
+- [ ] Confirm Codex Run Insights can resume the selected session and copy its session ID.
+- [ ] Confirm `Tools → SkillOps → Claude → Resume Session` finds the current project's transcripts and launches `claude --resume <session-id>` in a new terminal.
+- [ ] Confirm Claude resume supports continue, picker, named-session, and copy-session-ID actions.
+- [ ] Confirm sessions from another project are excluded for both Codex and Claude.

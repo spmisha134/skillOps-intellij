@@ -220,7 +220,7 @@ To run an IntelliJ instance with the plugin installed:
 ./gradlew runIde
 ```
 
-`runIde` launches the latest development target, IntelliJ IDEA 2025.2.6.2. To manually check the oldest supported IDE instead:
+`runIde` launches the latest stable development target, IntelliJ IDEA 2025.2.6.2. To manually check the oldest supported IDE instead:
 
 ```bash
 ./gradlew runIdeOldest

@@ -1,6 +1,7 @@
 package com.spmisha134.skillops.insights.gemini
 
 import com.spmisha134.skillops.insights.parser.RawInsightEvent
+import com.spmisha134.skillops.insights.parser.InsightTimestamp
 import com.spmisha134.skillops.insights.usage.TokenUsage
 
 class GeminiStreamingAccumulator(private val repositorySkills: List<String>) {
@@ -11,8 +12,12 @@ class GeminiStreamingAccumulator(private val repositorySkills: List<String>) {
     private var searchCount = 0
     private var toolCallCount = 0
     private var meaningfulRecord = false
+    private var latestEventTimestampMs: Long? = null
 
     fun accept(event: RawInsightEvent) {
+        InsightTimestamp.parseMillis(event.timestamp)?.let { timestamp ->
+            latestEventTimestampMs = maxOf(latestEventTimestampMs ?: Long.MIN_VALUE, timestamp)
+        }
         val payload = event.payload ?: return
         val type = payload.get("type")?.takeIf { it.isJsonPrimitive && it.asJsonPrimitive.isString }?.asString
         if (type in MEANINGFUL_RECORD_TYPES) meaningfulRecord = true
@@ -64,6 +69,7 @@ class GeminiStreamingAccumulator(private val repositorySkills: List<String>) {
     fun recordedSkills(): List<String> = activatedSkills.toList()
     fun invocationCommand(): String? = firstInvocation
     fun counts(): Pair<Int, Int> = searchCount to toolCallCount
+    fun lastActivityMs(): Long? = latestEventTimestampMs
 
     private data class Usage(val input: Long, val output: Long, val cached: Long, val thoughts: Long, val total: Long, val tool: Long)
     private fun com.google.gson.JsonObject.long(name: String): Long = get(name)?.takeIf { it.isJsonPrimitive && it.asJsonPrimitive.isNumber }?.asLong ?: 0L

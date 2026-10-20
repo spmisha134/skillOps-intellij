@@ -8,6 +8,7 @@ import org.junit.Test
 import org.junit.rules.TemporaryFolder
 import java.nio.file.Files
 import java.nio.file.attribute.FileTime
+import java.time.Instant
 
 class CodexRunInsightsServiceTest {
     @get:Rule
@@ -43,6 +44,27 @@ class CodexRunInsightsServiceTest {
         assertEquals(50.0, report.latestInsight?.efficiencySummary?.cachedInputPercent)
         assertEquals("019cb301-f5cf-76c0-a1db-8ef3580d7800", report.latestInsight?.resumeTarget?.sessionId)
         assertEquals(projectRoot, report.latestInsight?.resumeTarget?.workingDirectory)
+    }
+
+    @Test
+    fun `uses latest event timestamp instead of stale file modification time`() {
+        val projectRoot = temporaryFolder.newFolder("timestamp-project").toPath()
+        Files.createDirectories(projectRoot.resolve(".agents/skills/kafka-review"))
+        val codexHome = temporaryFolder.newFolder("timestamp-codex").toPath()
+        val sessions = Files.createDirectories(codexHome.resolve("sessions"))
+        val sessionFile = sessions.resolve("rollout-old.jsonl")
+        Files.writeString(sessionFile, """
+            {"timestamp":"2026-07-04T12:12:00Z","type":"session_meta","payload":{"cwd":"$projectRoot"}}
+            {"timestamp":"2026-07-04T12:12:03Z","type":"token_count","payload":{"usage":{"input_tokens":1,"output_tokens":1}}}
+        """.trimIndent() + "\n")
+        Files.setLastModifiedTime(sessionFile, FileTime.fromMillis(9_999_999_999L))
+
+        val report = CodexRunInsightsService().buildReport(
+            projectRoot,
+            SkillOpsInsightsSettings(codexHomePath = codexHome.toString()),
+        )
+
+        assertEquals(Instant.parse("2026-07-04T12:12:03Z").toEpochMilli(), report.latestInsight?.lastModifiedMs)
     }
 
     @Test

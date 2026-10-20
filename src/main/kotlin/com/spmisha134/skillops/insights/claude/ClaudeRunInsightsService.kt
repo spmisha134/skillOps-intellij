@@ -65,7 +65,7 @@ class ClaudeRunInsightsService(
             insights += SkillRunInsight(
                 sessionPath = file.path,
                 sessionFileName = file.fileName,
-                lastModifiedMs = file.lastModifiedMs,
+                lastModifiedMs = accumulator.lastActivityMs() ?: file.lastModifiedMs,
                 sizeBytes = totalSize,
                 matchedSkillName = matched.firstOrNull(),
                 matchedSkillNames = matched,
@@ -82,7 +82,7 @@ class ClaudeRunInsightsService(
             warnings += "Ignored $incomplete Claude session(s) without completed assistant usage."
         }
         return SkillOpsRunInsightsReport(
-            insights = insights,
+            insights = insights.sortedByDescending(SkillRunInsight::lastModifiedMs),
             warnings = warnings,
             platformName = "Claude",
         )

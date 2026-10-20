@@ -66,7 +66,7 @@ class CodexRunInsightsService(
             insights += SkillRunInsight(
                 sessionPath = sessionFile.path,
                 sessionFileName = sessionFile.fileName,
-                lastModifiedMs = sessionFile.lastModifiedMs,
+                lastModifiedMs = accumulator.lastActivityMs() ?: sessionFile.lastModifiedMs,
                 sizeBytes = sessionFile.sizeBytes,
                 matchedSkillName = matchedSkillNames.firstOrNull(),
                 matchedSkillNames = matchedSkillNames,
@@ -85,7 +85,7 @@ class CodexRunInsightsService(
         }
 
         return SkillOpsRunInsightsReport(
-            insights = insights,
+            insights = insights.sortedByDescending(SkillRunInsight::lastModifiedMs),
             warnings = warnings,
             platformName = "Codex",
         )

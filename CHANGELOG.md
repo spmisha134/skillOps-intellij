@@ -2,7 +2,13 @@
 
 # skillops-intellij Changelog
 
-## [Unreleased]
+## [0.8.0] - 2026-10-20
+
+### Fixed
+- Use the latest recorded session event timestamp for Run Insights instead of a potentially stale filesystem modification time.
+
+### Changed
+- Increase the default maximum sessions scanned from 200 to 250; keep the setting configurable.
 
 ## [0.7.0] - 2026-09-01
 

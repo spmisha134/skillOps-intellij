@@ -3,7 +3,7 @@ package com.spmisha134.skillops.insights.settings
 data class SkillOpsInsightsSettings(
     var codexHomePath: String = "~/.codex",
     var claudeHomePath: String = "~/.claude",
-    var maxSessionsToScan: Int = 200,
+    var maxSessionsToScan: Int = 250,
     var autoRefreshEnabled: Boolean = true,
     var refreshIntervalSeconds: Int = 10,
     var completedRunQuietPeriodSeconds: Int = 30,

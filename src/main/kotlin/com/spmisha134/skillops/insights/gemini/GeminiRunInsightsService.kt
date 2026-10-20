@@ -60,7 +60,7 @@ class GeminiRunInsightsService(
             insights += SkillRunInsight(
                 sessionPath = file.path,
                 sessionFileName = file.fileName,
-                lastModifiedMs = file.lastModifiedMs,
+                lastModifiedMs = accumulator.lastActivityMs() ?: file.lastModifiedMs,
                 sizeBytes = file.sizeBytes,
                 matchedSkillName = matched.firstOrNull(),
                 matchedSkillNames = matched,
@@ -74,7 +74,7 @@ class GeminiRunInsightsService(
         if (incomplete > 0) {
             warnings += "Ignored $incomplete empty or authentication-aborted Gemini session(s)."
         }
-        return SkillOpsRunInsightsReport(insights, warnings, "Gemini")
+        return SkillOpsRunInsightsReport(insights.sortedByDescending(SkillRunInsight::lastModifiedMs), warnings, "Gemini")
     }
 
     fun buildReport(projectRoot: Path, settings: SkillOpsInsightsSettings): SkillOpsRunInsightsReport =

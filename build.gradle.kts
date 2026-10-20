@@ -95,7 +95,7 @@ val runIdeOldest by intellijPlatformTesting.runIde.registering {
 }
 
 tasks.named("runIde") {
-    description = "Runs the plugin in the latest supported IntelliJ IDEA (2025.2.6.2)."
+    description = "Runs the plugin in the latest stable supported IntelliJ IDEA (2025.2.6.2)."
     setDependsOn(listOf(runIdeLatest))
     enabled = false
 }
