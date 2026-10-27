@@ -41,7 +41,7 @@ class ClaudeUsageExtractor {
             lastTurnOutputTokens = latest.usage.long("output_tokens"),
             lastTurnCachedInputTokens = latest.usage.long("cache_read_input_tokens"),
             lastTurnTotalTokens = latestTotal,
-            modelName = latest.model,
+            modelName = calls.asReversed().firstNotNullOfOrNull { it.model },
             turnCount = calls.size,
             durationMs = findLongDeep(events, "duration_ms", "durationMs"),
             serverWebSearchRequests = serverSearches.toInt().takeIf { it > 0 },
