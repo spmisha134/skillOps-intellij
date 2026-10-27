@@ -108,7 +108,7 @@ class RunInsightsReportFormatter {
             lastTurnTotalTokens?.let { "- ${contextLabel(platformName)} total: ${formatLong(it)}" },
             contextWindowTokens?.let { window ->
                 "- Context window: ${formatLong(window)}" +
-                    lastTurnTotalTokens?.let { used -> " (${formatLong((window - used).coerceAtLeast(0))} remaining)" }.orEmpty()
+                    lastTurnTotalTokens?.let { used -> " (${formatLong((window - used).coerceAtLeast(0))} remaining at last recorded snapshot)" }.orEmpty()
             },
         )
             .ifEmpty { listOf("- Token event found, but totals were unavailable") }
@@ -139,7 +139,7 @@ class RunInsightsReportFormatter {
         if (value >= 60_000) "${value / 60_000}m ${(value % 60_000) / 1_000}s" else "${value / 1_000}.${(value % 1_000) / 100}s"
 
     private fun contextLabel(platformName: String): String =
-        if (platformName.equals("Claude", ignoreCase = true)) "Latest assistant call" else "Current context"
+        if (platformName.equals("Claude", ignoreCase = true)) "Latest recorded assistant call" else "Latest recorded context"
 
     private fun formatInstant(epochMs: Long): String =
         DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(
