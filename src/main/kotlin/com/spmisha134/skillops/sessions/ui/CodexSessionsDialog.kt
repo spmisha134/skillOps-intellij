@@ -45,6 +45,7 @@ class CodexSessionsDialog(
     private val tableModel = SessionTableModel(result.sessions)
     private val table = JBTable(tableModel)
     private val copyButton = JButton("Copy Session ID")
+    private val modelOverride = JBTextField()
     private val detailsArea = JBTextArea(6, 80).apply {
         isEditable = false
         lineWrap = true
@@ -95,7 +96,13 @@ class CodexSessionsDialog(
             add(JBScrollPane(table), BorderLayout.CENTER)
             add(JBPanel<JBPanel<*>>(BorderLayout(0, 4)).apply {
                 add(JBLabel("Selected session:"), BorderLayout.NORTH)
-                add(JBScrollPane(detailsArea), BorderLayout.CENTER)
+                add(JBPanel<JBPanel<*>>(BorderLayout(0, 4)).apply {
+                    add(JBPanel<JBPanel<*>>(BorderLayout(8, 0)).apply {
+                        add(JBLabel("Model:"), BorderLayout.WEST)
+                        add(modelOverride, BorderLayout.CENTER)
+                    }, BorderLayout.NORTH)
+                    add(JBScrollPane(detailsArea), BorderLayout.CENTER)
+                }, BorderLayout.CENTER)
             }, BorderLayout.SOUTH)
         }, BorderLayout.CENTER)
         add(JBPanel<JBPanel<*>>(BorderLayout()).apply {
@@ -110,7 +117,7 @@ class CodexSessionsDialog(
     override fun doOKAction() {
         val session = selectedSession() ?: return
         try {
-            launcher.resume(project, session.resumeTarget, projectRoot)
+            launcher.resume(project, session.resumeTarget.copy(modelName = modelOverride.text.trim().takeIf(String::isNotBlank)), projectRoot)
             close(OK_EXIT_CODE)
         } catch (error: Throwable) {
             NotificationPresenter.showError(
@@ -136,6 +143,8 @@ class CodexSessionsDialog(
         val hasSelection = session != null
         isOKActionEnabled = hasSelection
         copyButton.isEnabled = hasSelection
+        modelOverride.text = session?.resumeTarget?.modelName.orEmpty()
+        modelOverride.isEnabled = hasSelection
         detailsArea.text = session?.let(::formatDetails) ?: "Select a session to see its task and resume command."
         detailsArea.caretPosition = 0
     }
@@ -153,9 +162,14 @@ class CodexSessionsDialog(
         appendLine()
         appendLine("Working directory:")
         appendLine(session.resumeTarget.workingDirectory ?: projectRoot)
+        session.resumeTarget.modelName?.let {
+            appendLine()
+            appendLine("Model:")
+            appendLine(it)
+        }
         appendLine()
         appendLine("Command:")
-        append(CodexResumeCommand.build(session.resumeTarget.sessionId))
+        append(CodexResumeCommand.build(session.resumeTarget.sessionId, modelOverride.text.trim().takeIf(String::isNotBlank)))
     }
 
     private class SessionTableModel(private val allSessions: List<CodexSession>) : AbstractTableModel() {

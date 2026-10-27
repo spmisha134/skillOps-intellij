@@ -5,4 +5,5 @@ import java.nio.file.Path
 data class SessionResumeTarget(
     val sessionId: String,
     val workingDirectory: Path?,
+    val modelName: String? = null,
 )

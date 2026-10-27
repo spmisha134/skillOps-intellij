@@ -88,7 +88,7 @@ class RunInsightsReportFormatter {
         }
 
         return listOfNotNull(
-            totalTokens?.let { "- Total: ${formatLong(it)}" },
+            totalTokens?.let { "- Session total: ${formatLong(it)}" },
             inputTokens?.let { "- Input: ${formatLong(it)}" },
             outputTokens?.let { "- Output: ${formatLong(it)}" },
             cachedInputTokens?.let { "- Cached: ${formatLong(it)}" },
@@ -96,6 +96,20 @@ class RunInsightsReportFormatter {
             toolTokens?.let { "- Tool: ${formatLong(it)}" },
             reasoningOutputTokens?.let { "- Reasoning: ${formatLong(it)}" },
             rateLimitUsedPercent?.let { "- Rate limit: ${formatPercent(it)}" },
+            modelName?.let { "- Model: $it" },
+            durationMs?.let { "- Duration: ${formatDuration(it)}" },
+            turnCount?.let { "- Turns: $it" },
+            serverWebSearchRequests?.let { "- Server web searches: $it" },
+            serverWebFetchRequests?.let { "- Server web fetches: $it" },
+            lastTurnInputTokens?.let { "- Latest turn input: ${formatLong(it)}" },
+            lastTurnOutputTokens?.let { "- Latest turn output: ${formatLong(it)}" },
+            lastTurnCachedInputTokens?.let { "- Latest turn cached: ${formatLong(it)}" },
+            lastTurnReasoningOutputTokens?.let { "- Latest turn reasoning: ${formatLong(it)}" },
+            lastTurnTotalTokens?.let { "- Latest turn total: ${formatLong(it)}" },
+            contextWindowTokens?.let { window ->
+                "- Context window: ${formatLong(window)}" +
+                    lastTurnTotalTokens?.let { used -> " (${formatLong((window - used).coerceAtLeast(0))} remaining after latest turn)" }.orEmpty()
+            },
         )
             .ifEmpty { listOf("- Token event found, but totals were unavailable") }
     }
@@ -120,6 +134,9 @@ class RunInsightsReportFormatter {
 
     private fun formatPercent(value: Double): String =
         "%.1f%%".format(value)
+
+    private fun formatDuration(value: Long): String =
+        if (value >= 60_000) "${value / 60_000}m ${(value % 60_000) / 1_000}s" else "${value / 1_000}.${(value % 1_000) / 100}s"
 
     private fun formatInstant(epochMs: Long): String =
         DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(

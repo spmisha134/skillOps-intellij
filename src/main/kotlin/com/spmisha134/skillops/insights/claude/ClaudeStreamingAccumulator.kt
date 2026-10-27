@@ -22,6 +22,9 @@ class ClaudeStreamingAccumulator(
     private var searchCount = 0
     private var toolCallCount = 0
     private var latestEventTimestampMs: Long? = null
+    private var modelName: String? = null
+    private var serverWebSearchRequests = 0
+    private var serverWebFetchRequests = 0
 
     fun accept(event: RawInsightEvent) {
         InsightTimestamp.parseMillis(event.timestamp)?.let { timestamp ->
@@ -46,10 +49,14 @@ class ClaudeStreamingAccumulator(
             val id = message?.get("id")?.takeIf { it.isJsonPrimitive && it.asJsonPrimitive.isString }?.asString
             val usage = message?.getAsJsonObject("usage")
             if (id != null && usage != null) {
+                modelName = message.get("model")?.takeIf { it.isJsonPrimitive && it.asJsonPrimitive.isString }?.asString ?: modelName
                 assistantCalls[id] = Usage(
                     usage.long("input_tokens"), usage.long("output_tokens"),
                     usage.long("cache_read_input_tokens"), usage.long("cache_creation_input_tokens"),
                 )
+                val serverToolUse = usage.getAsJsonObject("server_tool_use")
+                serverWebSearchRequests += serverToolUse?.long("web_search_requests")?.toInt() ?: 0
+                serverWebFetchRequests += serverToolUse?.long("web_fetch_requests")?.toInt() ?: 0
             }
         }
         payload.get("attributionSkill")?.takeIf { it.isJsonPrimitive && it.asJsonPrimitive.isString }?.asString?.let(attributedSkills::add)
@@ -84,8 +91,31 @@ class ClaudeStreamingAccumulator(
         val output = assistantCalls.values.sumOf { it.output }
         val cacheRead = assistantCalls.values.sumOf { it.cacheRead }
         val cacheCreation = assistantCalls.values.sumOf { it.cacheCreation }
-        return TokenUsage(input, output, cacheRead, null, input + output + cacheRead + cacheCreation, null, null,
-            mapOf("distinctAssistantCalls" to assistantCalls.size, "definition" to "input + output + cache read + cache creation"), cacheCreation, null)
+        val latest = assistantCalls.values.last()
+        val latestTotal = latest.input + latest.output + latest.cacheRead + latest.cacheCreation
+        return TokenUsage(
+            inputTokens = input,
+            outputTokens = output,
+            cachedInputTokens = cacheRead,
+            reasoningOutputTokens = null,
+            totalTokens = input + output + cacheRead + cacheCreation,
+            rateLimitUsedPercent = null,
+            rateLimitResetAt = null,
+            rawEvidence = mapOf(
+                "distinctAssistantCalls" to assistantCalls.size,
+                "definition" to "input + output + cache read + cache creation",
+            ),
+            cacheCreationInputTokens = cacheCreation,
+            toolTokens = null,
+            lastTurnInputTokens = latest.input,
+            lastTurnOutputTokens = latest.output,
+            lastTurnCachedInputTokens = latest.cacheRead,
+            lastTurnTotalTokens = latestTotal,
+            modelName = modelName,
+            turnCount = assistantCalls.size,
+            serverWebSearchRequests = serverWebSearchRequests.takeIf { it > 0 },
+            serverWebFetchRequests = serverWebFetchRequests.takeIf { it > 0 },
+        )
     }
 
     fun matchedSkills(): List<String> = if (attributedSkills.isNotEmpty()) {
@@ -98,7 +128,7 @@ class ClaudeStreamingAccumulator(
     fun lastActivityMs(): Long? = latestEventTimestampMs
     fun resumeTarget(fileName: String): SessionResumeTarget? {
         val id = sessionId ?: fileName.removeSuffix(".jsonl").takeIf(String::isNotBlank) ?: return null
-        return SessionResumeTarget(id, workingDirectory)
+        return SessionResumeTarget(id, workingDirectory, modelName)
     }
 
     private fun isSynthetic(text: String): Boolean = CONTROL_TAGS.any { text.contains("<$it", ignoreCase = true) } ||

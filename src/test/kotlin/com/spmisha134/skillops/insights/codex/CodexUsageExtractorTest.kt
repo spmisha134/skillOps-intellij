@@ -102,7 +102,7 @@ class CodexUsageExtractorTest {
     @Test
     fun `extracts current codex event message token schema`() {
         val events = parseEvents(
-            """{"type":"event_msg","payload":{"type":"token_count","info":{"total_token_usage":{"input_tokens":217197,"cached_input_tokens":192256,"output_tokens":2021,"reasoning_output_tokens":637,"total_tokens":219218},"last_token_usage":{"input_tokens":29865,"cached_input_tokens":29440,"output_tokens":189,"reasoning_output_tokens":53,"total_tokens":30054}},"rate_limits":{"primary":{"used_percent":4.0,"resets_at":1784974038}}}}""",
+            """{"type":"event_msg","payload":{"type":"token_count","info":{"total_token_usage":{"input_tokens":217197,"cached_input_tokens":192256,"output_tokens":2021,"reasoning_output_tokens":637,"total_tokens":219218},"last_token_usage":{"input_tokens":29865,"cached_input_tokens":29440,"output_tokens":189,"reasoning_output_tokens":53,"total_tokens":30054},"model_context_window":258400},"model":"gpt-6-codex","rate_limits":{"primary":{"used_percent":4.0,"resets_at":1784974038}}}}""",
         )
 
         val usage = CodexUsageExtractor().extract(events)
@@ -112,6 +112,13 @@ class CodexUsageExtractorTest {
         assertEquals(2_021L, usage?.outputTokens)
         assertEquals(637L, usage?.reasoningOutputTokens)
         assertEquals(219_218L, usage?.totalTokens)
+        assertEquals(29_865L, usage?.lastTurnInputTokens)
+        assertEquals(189L, usage?.lastTurnOutputTokens)
+        assertEquals(29_440L, usage?.lastTurnCachedInputTokens)
+        assertEquals(53L, usage?.lastTurnReasoningOutputTokens)
+        assertEquals(30_054L, usage?.lastTurnTotalTokens)
+        assertEquals(258_400L, usage?.contextWindowTokens)
+        assertEquals("gpt-6-codex", usage?.modelName)
         assertEquals(4.0, usage?.rateLimitUsedPercent)
     }
 
