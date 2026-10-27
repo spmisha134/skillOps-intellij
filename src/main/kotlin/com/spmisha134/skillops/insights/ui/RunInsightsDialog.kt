@@ -8,7 +8,6 @@ import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBPanel
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.JBTextArea
-import com.intellij.ui.components.JBTextField
 import com.spmisha134.skillops.insights.presentation.RunInsightsReportFormatter
 import com.spmisha134.skillops.insights.run.SkillOpsRunInsightsReport
 import com.spmisha134.skillops.insights.run.SkillRunInsight
@@ -31,7 +30,7 @@ class RunInsightsDialog(
     private val claudeTerminalLauncher: ClaudeSessionTerminalLauncher = ClaudeSessionTerminalLauncher(),
 ) : DialogWrapper(project) {
     private var selectedInsight: SkillRunInsight? = null
-    private val modelOverride = JBTextField()
+    private val modelOverride = ComboBox<String>()
     private val textArea = JBTextArea().apply {
         isEditable = false
         lineWrap = true
@@ -65,6 +64,12 @@ class RunInsightsDialog(
 
     init {
         title = "SkillOps ${report.platformName} Run Insights"
+        modelOverride.model = DefaultComboBoxModel(
+            arrayOf(DEFAULT_MODEL_OPTION) + report.insights.mapNotNull { it.tokenUsage?.modelName ?: it.resumeTarget?.modelName }
+                .distinct()
+                .toTypedArray()
+        )
+        modelOverride.isEditable = false
         refreshRuns()
         init()
     }
@@ -101,7 +106,7 @@ class RunInsightsDialog(
             ?.index
             ?.let(report.insights::getOrNull)
         selectedInsight = insight
-        modelOverride.text = insight?.resumeTarget?.modelName ?: insight?.tokenUsage?.modelName.orEmpty()
+        modelOverride.selectedItem = insight?.resumeTarget?.modelName ?: insight?.tokenUsage?.modelName ?: DEFAULT_MODEL_OPTION
         modelOverride.isEnabled = insight?.resumeTarget != null
         textArea.text = if (insight == null) {
             formatter.format(report)
@@ -136,7 +141,7 @@ class RunInsightsDialog(
         val projectRoot = project.basePath?.let(Path::of)
             ?: return NotificationPresenter.showError(project, "No project base path is available.")
         try {
-            val model = modelOverride.text.trim().takeIf(String::isNotBlank)
+            val model = (modelOverride.selectedItem as? String)?.takeUnless { it == DEFAULT_MODEL_OPTION }
             val targetWithModel = target.copy(modelName = model)
             if (report.platformName == "Claude") {
                 claudeTerminalLauncher.resume(project, targetWithModel, projectRoot)
@@ -157,5 +162,9 @@ class RunInsightsDialog(
         val label: String,
     ) {
         override fun toString(): String = label
+    }
+
+    companion object {
+        private const val DEFAULT_MODEL_OPTION = "Use configured default"
     }
 }

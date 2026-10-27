@@ -9,6 +9,7 @@ import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.JBTextField
 import com.intellij.ui.components.JBTextArea
+import com.intellij.openapi.ui.ComboBox
 import com.intellij.ui.table.JBTable
 import com.spmisha134.skillops.presentation.NotificationPresenter
 import com.spmisha134.skillops.sessions.model.ClaudeSession
@@ -41,7 +42,9 @@ class ClaudeSessionsDialog(
     private val table = JBTable(model)
     private val details = JBTextArea(5, 80).apply { isEditable = false; lineWrap = true; wrapStyleWord = true }
     private val copy = JButton("Copy Session ID")
-    private val modelOverride = JBTextField()
+    private val modelOverride = ComboBox<String>().apply {
+        addActionListener { refresh() }
+    }
     private val continueButton = JButton("Continue Most Recent")
     private val pickerButton = JButton("Open Claude Session Picker")
     private val namedButton = JButton("Resume Named Session")
@@ -49,6 +52,10 @@ class ClaudeSessionsDialog(
     init {
         title = "Claude Sessions"
         setOKButtonText("Resume Session")
+        modelOverride.model = javax.swing.DefaultComboBoxModel(
+            arrayOf(DEFAULT_MODEL_OPTION) + result.sessions.mapNotNull { it.resumeTarget.modelName }.distinct().toTypedArray()
+        )
+        modelOverride.isEditable = false
         init()
         table.selectionModel.selectionMode = ListSelectionModel.SINGLE_SELECTION
         table.autoCreateRowSorter = true
@@ -96,7 +103,7 @@ class ClaudeSessionsDialog(
         runCommand(
             ClaudeResumeCommand.build(
                 session.resumeTarget.sessionId,
-                modelOverride.text.trim().takeIf(String::isNotBlank),
+                selectedModel(),
             ),
             session,
         )
@@ -117,17 +124,20 @@ class ClaudeSessionsDialog(
         val session = selected()
         isOKActionEnabled = session != null
         copy.isEnabled = session != null
-        modelOverride.text = session?.resumeTarget?.modelName.orEmpty()
+        modelOverride.selectedItem = session?.resumeTarget?.modelName ?: DEFAULT_MODEL_OPTION
         modelOverride.isEnabled = session != null
         details.text = session?.let {
             "Task: ${it.initialPrompt ?: "(No task summary recorded)"}" +
                 "\nWorking directory: ${it.resumeTarget.workingDirectory ?: projectRoot}" +
                 it.resumeTarget.modelName?.let { model -> "\nModel: $model" }.orEmpty() +
-                "\nCommand: ${ClaudeResumeCommand.build(it.resumeTarget.sessionId, modelOverride.text.trim().takeIf(String::isNotBlank))}"
+                "\nCommand: ${ClaudeResumeCommand.build(it.resumeTarget.sessionId, selectedModel())}"
         }
             ?: "Select a session to see its task and resume command."
         details.caretPosition = 0
     }
+
+    private fun selectedModel(): String? =
+        (modelOverride.selectedItem as? String)?.takeUnless { it == DEFAULT_MODEL_OPTION }
 
     private class SessionTableModel(private val all: List<ClaudeSession>) : AbstractTableModel() {
         private var rows = all
@@ -147,5 +157,8 @@ class ClaudeSessionsDialog(
         fun filter(query: String) { val q = query.trim().lowercase(); rows = if (q.isEmpty()) all else all.filter { s -> listOfNotNull(s.resumeTarget.sessionId, s.resumeTarget.workingDirectory?.toString(), s.initialPrompt, s.skillNames.joinToString()).any { it.lowercase().contains(q) } }; fireTableDataChanged() }
     }
 
-    companion object { private val DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm") }
+    companion object {
+        private const val DEFAULT_MODEL_OPTION = "Use configured default"
+        private val DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
+    }
 }
