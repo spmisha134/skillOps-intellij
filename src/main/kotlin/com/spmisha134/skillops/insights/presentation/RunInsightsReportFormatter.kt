@@ -35,7 +35,7 @@ class RunInsightsReportFormatter {
         insight.resumeTarget?.let { lines += "Session: ${it.sessionId}" }
         lines += ""
         lines += "Tokens"
-        lines += insight.tokenUsage.formatTokenLines()
+        lines += insight.tokenUsage.formatTokenLines(platformName)
         lines += ""
         lines += "Efficiency"
         lines += insight.formatEfficiencyLines()
@@ -82,7 +82,7 @@ class RunInsightsReportFormatter {
             "- Tool calls: ${efficiencySummary.toolCallCount}",
         )
 
-    private fun TokenUsage?.formatTokenLines(): List<String> {
+    private fun TokenUsage?.formatTokenLines(platformName: String): List<String> {
         if (this == null) {
             return listOf("- Not available")
         }
@@ -101,14 +101,14 @@ class RunInsightsReportFormatter {
             turnCount?.let { "- Turns: $it" },
             serverWebSearchRequests?.let { "- Server web searches: $it" },
             serverWebFetchRequests?.let { "- Server web fetches: $it" },
-            lastTurnInputTokens?.let { "- Latest turn input: ${formatLong(it)}" },
-            lastTurnOutputTokens?.let { "- Latest turn output: ${formatLong(it)}" },
-            lastTurnCachedInputTokens?.let { "- Latest turn cached: ${formatLong(it)}" },
-            lastTurnReasoningOutputTokens?.let { "- Latest turn reasoning: ${formatLong(it)}" },
-            lastTurnTotalTokens?.let { "- Latest turn total: ${formatLong(it)}" },
+            lastTurnInputTokens?.let { "- ${contextLabel(platformName)} input: ${formatLong(it)}" },
+            lastTurnOutputTokens?.let { "- ${contextLabel(platformName)} output: ${formatLong(it)}" },
+            lastTurnCachedInputTokens?.let { "- ${contextLabel(platformName)} cached: ${formatLong(it)}" },
+            lastTurnReasoningOutputTokens?.let { "- ${contextLabel(platformName)} reasoning: ${formatLong(it)}" },
+            lastTurnTotalTokens?.let { "- ${contextLabel(platformName)} total: ${formatLong(it)}" },
             contextWindowTokens?.let { window ->
                 "- Context window: ${formatLong(window)}" +
-                    lastTurnTotalTokens?.let { used -> " (${formatLong((window - used).coerceAtLeast(0))} remaining after latest turn)" }.orEmpty()
+                    lastTurnTotalTokens?.let { used -> " (${formatLong((window - used).coerceAtLeast(0))} remaining)" }.orEmpty()
             },
         )
             .ifEmpty { listOf("- Token event found, but totals were unavailable") }
@@ -137,6 +137,9 @@ class RunInsightsReportFormatter {
 
     private fun formatDuration(value: Long): String =
         if (value >= 60_000) "${value / 60_000}m ${(value % 60_000) / 1_000}s" else "${value / 1_000}.${(value % 1_000) / 100}s"
+
+    private fun contextLabel(platformName: String): String =
+        if (platformName.equals("Claude", ignoreCase = true)) "Latest assistant call" else "Current context"
 
     private fun formatInstant(epochMs: Long): String =
         DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(

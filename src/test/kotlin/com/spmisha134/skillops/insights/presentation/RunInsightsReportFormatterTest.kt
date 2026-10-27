@@ -55,8 +55,8 @@ class RunInsightsReportFormatterTest {
 
         assertTrue(text.contains("Skill: kafka-review"))
         assertTrue(text.contains("- Session total: 125"))
-        assertTrue(text.contains("- Latest turn total: 100"))
-        assertTrue(text.contains("- Context window: 200 (100 remaining after latest turn)"))
+        assertTrue(text.contains("- Current context total: 100"))
+        assertTrue(text.contains("- Context window: 200 (100 remaining)"))
         assertTrue(text.contains("- Model: test-model"))
         assertTrue(text.contains("- Duration: 1.2s"))
         assertTrue(text.contains("- Turns: 3"))
