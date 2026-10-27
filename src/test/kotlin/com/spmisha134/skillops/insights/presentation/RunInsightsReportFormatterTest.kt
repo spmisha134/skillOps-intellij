@@ -27,7 +27,16 @@ class RunInsightsReportFormatterTest {
                         totalTokens = 125,
                         rateLimitUsedPercent = null,
                         rateLimitResetAt = null,
-                        rawEvidence = emptyMap(),
+                        rawEvidence = emptyMap<String, Any?>(),
+                        cacheCreationInputTokens = null,
+                        toolTokens = null,
+                        lastTurnInputTokens = 80,
+                        lastTurnOutputTokens = 20,
+                        lastTurnTotalTokens = 100,
+                        contextWindowTokens = 200,
+                        modelName = "test-model",
+                        durationMs = 1_250,
+                        turnCount = 3,
                     ),
                     efficiencySummary = EfficiencySummary(
                         outputInputRatio = 0.25,
@@ -45,7 +54,12 @@ class RunInsightsReportFormatterTest {
         val text = RunInsightsReportFormatter().format(report)
 
         assertTrue(text.contains("Skill: kafka-review"))
-        assertTrue(text.contains("- Total: 125"))
+        assertTrue(text.contains("- Session total: 125"))
+        assertTrue(text.contains("- Latest turn total: 100"))
+        assertTrue(text.contains("- Context window: 200 (100 remaining after latest turn)"))
+        assertTrue(text.contains("- Model: test-model"))
+        assertTrue(text.contains("- Duration: 1.2s"))
+        assertTrue(text.contains("- Turns: 3"))
         assertTrue(text.contains("- Output/input ratio: 0.25"))
         assertTrue(text.contains("- Cached input: 50.0%"))
         assertTrue(!text.contains("Session: session.jsonl"))

@@ -11,6 +11,19 @@ data class TokenUsage(
     val rawEvidence: Map<String, Any?>,
     val cacheCreationInputTokens: Long?,
     val toolTokens: Long?,
+    /** Usage for the latest turn/context snapshot, when the provider records it separately. */
+    val lastTurnInputTokens: Long? = null,
+    val lastTurnOutputTokens: Long? = null,
+    val lastTurnCachedInputTokens: Long? = null,
+    val lastTurnReasoningOutputTokens: Long? = null,
+    val lastTurnTotalTokens: Long? = null,
+    /** Provider-reported model context window. This is not inferred from model names. */
+    val contextWindowTokens: Long? = null,
+    val modelName: String? = null,
+    val durationMs: Long? = null,
+    val turnCount: Int? = null,
+    val serverWebSearchRequests: Int? = null,
+    val serverWebFetchRequests: Int? = null,
 ) {
     constructor(
         inputTokens: Long?,

@@ -97,6 +97,7 @@ class CodexStreamingAccumulator(
             workingDirectory,
             CodexPromptSummary.title(userPrompts),
             userPrompts.toList(),
+            latestTokenUsage?.modelName,
         )
     }
 

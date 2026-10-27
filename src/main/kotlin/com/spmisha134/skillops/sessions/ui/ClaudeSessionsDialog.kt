@@ -41,6 +41,7 @@ class ClaudeSessionsDialog(
     private val table = JBTable(model)
     private val details = JBTextArea(5, 80).apply { isEditable = false; lineWrap = true; wrapStyleWord = true }
     private val copy = JButton("Copy Session ID")
+    private val modelOverride = JBTextField()
     private val continueButton = JButton("Continue Most Recent")
     private val pickerButton = JButton("Open Claude Session Picker")
     private val namedButton = JButton("Resume Named Session")
@@ -72,7 +73,16 @@ class ClaudeSessionsDialog(
     override fun createCenterPanel(): JComponent = JBPanel<JBPanel<*>>(BorderLayout(0, 8)).apply {
         preferredSize = Dimension(1000, 560)
         add(JBPanel<JBPanel<*>>(BorderLayout(8, 0)).apply { add(JBLabel("Search:"), BorderLayout.WEST); add(search, BorderLayout.CENTER) }, BorderLayout.NORTH)
-        add(JBPanel<JBPanel<*>>(BorderLayout(0, 8)).apply { add(JBScrollPane(table), BorderLayout.CENTER); add(JBScrollPane(details), BorderLayout.SOUTH) }, BorderLayout.CENTER)
+        add(JBPanel<JBPanel<*>>(BorderLayout(0, 8)).apply {
+            add(JBScrollPane(table), BorderLayout.CENTER)
+            add(JBPanel<JBPanel<*>>(BorderLayout(0, 4)).apply {
+                add(JBPanel<JBPanel<*>>(BorderLayout(8, 0)).apply {
+                    add(JBLabel("Model:"), BorderLayout.WEST)
+                    add(modelOverride, BorderLayout.CENTER)
+                }, BorderLayout.NORTH)
+                add(JBScrollPane(details), BorderLayout.CENTER)
+            }, BorderLayout.SOUTH)
+        }, BorderLayout.CENTER)
         add(JBPanel<JBPanel<*>>(FlowLayout(FlowLayout.RIGHT, 8, 0)).apply {
             add(continueButton); add(pickerButton); add(namedButton); add(copy)
             result.warnings.joinToString(" ").takeIf(String::isNotBlank)?.let { add(JBLabel(it), 0) }
@@ -83,7 +93,13 @@ class ClaudeSessionsDialog(
 
     override fun doOKAction() {
         val session = selected() ?: return
-        runCommand(ClaudeResumeCommand.build(session.resumeTarget.sessionId), session)
+        runCommand(
+            ClaudeResumeCommand.build(
+                session.resumeTarget.sessionId,
+                modelOverride.text.trim().takeIf(String::isNotBlank),
+            ),
+            session,
+        )
     }
 
     private fun runCommand(command: String, session: ClaudeSession?) {
@@ -101,7 +117,14 @@ class ClaudeSessionsDialog(
         val session = selected()
         isOKActionEnabled = session != null
         copy.isEnabled = session != null
-        details.text = session?.let { "Task: ${it.initialPrompt ?: "(No task summary recorded)"}\nWorking directory: ${it.resumeTarget.workingDirectory ?: projectRoot}\nCommand: ${ClaudeResumeCommand.build(it.resumeTarget.sessionId)}" }
+        modelOverride.text = session?.resumeTarget?.modelName.orEmpty()
+        modelOverride.isEnabled = session != null
+        details.text = session?.let {
+            "Task: ${it.initialPrompt ?: "(No task summary recorded)"}" +
+                "\nWorking directory: ${it.resumeTarget.workingDirectory ?: projectRoot}" +
+                it.resumeTarget.modelName?.let { model -> "\nModel: $model" }.orEmpty() +
+                "\nCommand: ${ClaudeResumeCommand.build(it.resumeTarget.sessionId, modelOverride.text.trim().takeIf(String::isNotBlank))}"
+        }
             ?: "Select a session to see its task and resume command."
         details.caretPosition = 0
     }

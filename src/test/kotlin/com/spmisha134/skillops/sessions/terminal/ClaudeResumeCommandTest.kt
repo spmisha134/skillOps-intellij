@@ -12,4 +12,12 @@ class ClaudeResumeCommandTest {
         assertEquals("claude -n 'my session'", ClaudeResumeCommand.resumeNamed("my session"))
         assertEquals("claude -n 'Bob'\\''s session'", ClaudeResumeCommand.resumeNamed("Bob's session"))
     }
+
+    @Test
+    fun `adds recorded model when available`() {
+        assertEquals(
+            "claude --model 'claude-sonnet-5' --resume session-123",
+            ClaudeResumeCommand.build("session-123", "claude-sonnet-5"),
+        )
+    }
 }

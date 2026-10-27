@@ -9,7 +9,7 @@ import java.nio.file.Path
 
 class ClaudeSessionTerminalLauncher {
     fun resume(project: Project, target: SessionResumeTarget, projectRoot: Path) =
-        launch(project, target, projectRoot, ClaudeResumeCommand.build(target.sessionId))
+        launch(project, target, projectRoot, ClaudeResumeCommand.build(target.sessionId, target.modelName))
 
     fun launch(project: Project, target: SessionResumeTarget?, projectRoot: Path, command: String) {
         val workingDirectory = target?.workingDirectory?.takeIf(Files::isDirectory)
