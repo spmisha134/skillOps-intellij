@@ -4,6 +4,9 @@ import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
+import com.intellij.openapi.progress.ProgressIndicator
+import com.intellij.openapi.progress.ProgressManager
+import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
 import com.spmisha134.skillops.model.validation.SkillValidationContext
 import com.spmisha134.skillops.model.validation.SkillValidationIssue
@@ -32,17 +35,37 @@ class ValidateSkillAction : AnAction() {
             ?: return project.showValidationError("No project base path is available.")
 
         val selectedDirectory = event.selectedDirectory() ?: projectRoot
-        val skillDirectories = pathDetector.skillDirectoriesToValidate(projectRoot, selectedDirectory)
+        ProgressManager.getInstance().run(
+            object : Task.Modal(project, "Validating SkillOps Skills", true) {
+                private var skillDirectories: List<Path> = emptyList()
+                private lateinit var result: SkillValidationResult
 
-        if (skillDirectories.isEmpty()) {
-            project.showValidationError(
-                "Select a skill folder or a project folder containing .agents/skills/."
-            )
-            return
-        }
+                override fun run(indicator: ProgressIndicator) {
+                    indicator.isIndeterminate = true
+                    indicator.text = "Discovering skills…"
+                    indicator.checkCanceled()
+                    skillDirectories = pathDetector.skillDirectoriesToValidate(projectRoot, selectedDirectory)
+                    if (skillDirectories.isEmpty()) return
+                    indicator.text = "Validating ${skillDirectories.size} skill${if (skillDirectories.size == 1) "" else "s"}…"
+                    result = validateSkills(projectRoot, skillDirectories)
+                    indicator.checkCanceled()
+                }
 
-        val result = validateSkills(projectRoot, skillDirectories)
-        ValidationResultPresenter.showValidationResult(project, result)
+                override fun onSuccess() {
+                    if (skillDirectories.isEmpty()) {
+                        project.showValidationError(
+                            "Select a skill folder or a project folder containing .agents/skills/."
+                        )
+                    } else {
+                        ValidationResultPresenter.showValidationResult(project, result)
+                    }
+                }
+
+                override fun onThrowable(error: Throwable) {
+                    project.showValidationError(error.message ?: error.javaClass.simpleName)
+                }
+            }
+        )
     }
 
     private fun validateSkills(

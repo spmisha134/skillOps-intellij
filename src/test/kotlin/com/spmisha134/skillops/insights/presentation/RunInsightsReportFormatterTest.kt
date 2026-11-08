@@ -4,6 +4,8 @@ import com.spmisha134.skillops.insights.run.SkillOpsRunInsightsReport
 import com.spmisha134.skillops.insights.run.EfficiencySummary
 import com.spmisha134.skillops.insights.run.SkillRunInsight
 import com.spmisha134.skillops.insights.usage.TokenUsage
+import com.spmisha134.skillops.insights.usage.RateLimitWindow
+import com.spmisha134.skillops.insights.usage.UsageCredits
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.nio.file.Path
@@ -37,6 +39,12 @@ class RunInsightsReportFormatterTest {
                         modelName = "test-model",
                         durationMs = 1_250,
                         turnCount = 3,
+                        lastTurnCachedInputTokens = 70,
+                        lastTurnReasoningOutputTokens = 4,
+                        primaryRateLimit = RateLimitWindow(20.0, 300, 1_784_974_038),
+                        secondaryRateLimit = RateLimitWindow(3.0, 10_080, 1_785_578_838),
+                        usageCredits = UsageCredits(hasCredits = false, unlimited = false, balance = "0"),
+                        planType = "plus",
                     ),
                     efficiencySummary = EfficiencySummary(
                         outputInputRatio = 0.25,
@@ -54,16 +62,25 @@ class RunInsightsReportFormatterTest {
         val text = RunInsightsReportFormatter().format(report)
 
         assertTrue(text.contains("Skill: kafka-review"))
-        assertTrue(text.contains("- Session total: 125"))
-        assertTrue(text.contains("- Latest recorded context total: 100"))
-        assertTrue(text.contains("- Context window: 200 (100 remaining at last recorded snapshot)"))
+        assertTrue(text.contains("- Tokens used in this session: 125"))
+        assertTrue(text.contains("- Latest recorded context size: 100 tokens"))
+        assertTrue(text.contains("- Model context capacity: 200 tokens (100 approximate tokens left at last snapshot)"))
         assertTrue(text.contains("- Model: test-model"))
         assertTrue(text.contains("- Duration: 1.2s"))
         assertTrue(text.contains("- Turns: 3"))
+        assertTrue(text.contains("- 5-hour limit: 20.0% used"))
+        assertTrue(text.contains("- Weekly limit: 3.0% used"))
+        assertTrue(text.contains("- Credit balance: 0"))
         assertTrue(text.contains("- Output/input ratio: 0.25"))
         assertTrue(text.contains("- Cached input: 50.0%"))
         assertTrue(!text.contains("Session: session.jsonl"))
         assertTrue(!text.contains("Setup warnings:"))
+
+        val metrics = RunInsightsReportFormatter().metrics(report.latestInsight!!, "Codex")
+        assertTrue(metrics.any { it.section == "Latest context" && it.name == "Cached input" && it.value == "70" })
+        assertTrue(metrics.any { it.name == "5-hour limit usage" && it.value.contains("80.0% left") })
+        assertTrue(metrics.any { it.name == "Weekly limit reset" })
+        assertTrue(metrics.any { it.section == "Credits" && it.name == "Balance" && it.value == "0" })
     }
 
     @Test

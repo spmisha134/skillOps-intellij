@@ -24,6 +24,17 @@ data class TokenUsage(
     val turnCount: Int? = null,
     val serverWebSearchRequests: Int? = null,
     val serverWebFetchRequests: Int? = null,
+    val rateLimitRemainingTokens: Long? = null,
+    val rateLimitLimitTokens: Long? = null,
+    val lastTurnCacheCreationInputTokens: Long? = null,
+    val primaryRateLimit: RateLimitWindow? = null,
+    val secondaryRateLimit: RateLimitWindow? = null,
+    val usageCredits: UsageCredits? = null,
+    val rateLimitId: String? = null,
+    val rateLimitName: String? = null,
+    val planType: String? = null,
+    val rateLimitReachedType: String? = null,
+    val spendControlReached: Boolean? = null,
 ) {
     constructor(
         inputTokens: Long?,

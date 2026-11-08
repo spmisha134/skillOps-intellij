@@ -105,7 +105,7 @@ class CodexSessionsDialog(
                 add(JBLabel("Selected session:"), BorderLayout.NORTH)
                 add(JBPanel<JBPanel<*>>(BorderLayout(0, 4)).apply {
                     add(JBPanel<JBPanel<*>>(BorderLayout(8, 0)).apply {
-                        add(JBLabel("Model:"), BorderLayout.WEST)
+                        add(JBLabel("Model to use:"), BorderLayout.WEST)
                         add(modelOverride, BorderLayout.CENTER)
                     }, BorderLayout.NORTH)
                     add(JBScrollPane(detailsArea), BorderLayout.CENTER)

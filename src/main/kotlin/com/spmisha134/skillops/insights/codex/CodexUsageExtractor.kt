@@ -10,7 +10,9 @@ import com.spmisha134.skillops.insights.parser.doubleAt
 import com.spmisha134.skillops.insights.parser.longAt
 import com.spmisha134.skillops.insights.parser.objectAt
 import com.spmisha134.skillops.insights.parser.stringAt
+import com.spmisha134.skillops.insights.usage.RateLimitWindow
 import com.spmisha134.skillops.insights.usage.TokenUsage
+import com.spmisha134.skillops.insights.usage.UsageCredits
 
 class CodexUsageExtractor {
     fun extract(events: List<RawInsightEvent>): TokenUsage? {
@@ -28,6 +30,10 @@ class CodexUsageExtractor {
             ?: candidates.findLong(CACHED_INPUT_TOKEN_KEYS)
         val reasoningOutputTokens = cumulative?.let { listOf(it).findLong(REASONING_OUTPUT_TOKEN_KEYS) }
             ?: candidates.findLong(REASONING_OUTPUT_TOKEN_KEYS)
+        val rateLimits = findNamedObject(payload, "rate_limits", "rateLimits")
+        val primaryRateLimit = rateLimits?.objectAt("primary")?.toRateLimitWindow()
+        val secondaryRateLimit = rateLimits?.objectAt("secondary")?.toRateLimitWindow()
+        val credits = rateLimits?.objectAt("credits")?.toUsageCredits()
 
         return TokenUsage(
             inputTokens = inputTokens,
@@ -35,22 +41,61 @@ class CodexUsageExtractor {
             cachedInputTokens = cachedInputTokens,
             reasoningOutputTokens = reasoningOutputTokens,
             totalTokens = totalTokens,
-            rateLimitUsedPercent = candidates.findDouble(RATE_LIMIT_USED_PERCENT_KEYS),
+            rateLimitUsedPercent = primaryRateLimit?.usedPercent ?: candidates.findDouble(RATE_LIMIT_USED_PERCENT_KEYS),
             rateLimitResetAt = candidates.findString(RATE_LIMIT_RESET_AT_KEYS),
+            rateLimitRemainingTokens = candidates.findLong(RATE_LIMIT_REMAINING_TOKENS_KEYS),
+            rateLimitLimitTokens = candidates.findLong(RATE_LIMIT_LIMIT_TOKENS_KEYS),
             rawEvidence = event.rawEvidence(payload),
             cacheCreationInputTokens = candidates.findLong(CACHE_CREATION_INPUT_TOKEN_KEYS),
             toolTokens = null,
             lastTurnInputTokens = lastTurn?.let { listOf(it).findLong(INPUT_TOKEN_KEYS) },
             lastTurnOutputTokens = lastTurn?.let { listOf(it).findLong(OUTPUT_TOKEN_KEYS) },
             lastTurnCachedInputTokens = lastTurn?.let { listOf(it).findLong(CACHED_INPUT_TOKEN_KEYS) },
+            lastTurnCacheCreationInputTokens = lastTurn?.let { listOf(it).findLong(CACHE_CREATION_INPUT_TOKEN_KEYS) },
             lastTurnReasoningOutputTokens = lastTurn?.let { listOf(it).findLong(REASONING_OUTPUT_TOKEN_KEYS) },
             lastTurnTotalTokens = lastTurn?.let { listOf(it).findLong(TOTAL_TOKEN_KEYS) },
             contextWindowTokens = candidates.findLong(CONTEXT_WINDOW_KEYS),
             modelName = findStringDeep(payload, "model", "model_name", "modelName"),
             durationMs = findLongDeep(payload, "duration_ms", "durationMs"),
             turnCount = findLongDeep(payload, "num_turns", "numTurns")?.toInt(),
+            primaryRateLimit = primaryRateLimit,
+            secondaryRateLimit = secondaryRateLimit,
+            usageCredits = credits,
+            rateLimitId = rateLimits?.stringAt("limit_id") ?: rateLimits?.stringAt("limitId"),
+            rateLimitName = rateLimits?.stringAt("limit_name") ?: rateLimits?.stringAt("limitName"),
+            planType = rateLimits?.stringAt("plan_type") ?: rateLimits?.stringAt("planType"),
+            rateLimitReachedType = rateLimits?.stringAt("rate_limit_reached_type")
+                ?: rateLimits?.stringAt("rateLimitReachedType"),
+            spendControlReached = rateLimits?.booleanAt("spend_control_reached")
+                ?: rateLimits?.booleanAt("spendControlReached"),
         )
     }
+
+    private fun JsonObject.toRateLimitWindow(): RateLimitWindow? {
+        val window = RateLimitWindow(
+            usedPercent = doubleAt("used_percent") ?: doubleAt("usedPercent"),
+            windowMinutes = longAt("window_minutes") ?: longAt("windowMinutes"),
+            resetsAtEpochSeconds = longAt("resets_at") ?: longAt("resetsAt"),
+        )
+        return window.takeIf {
+            it.usedPercent != null || it.windowMinutes != null || it.resetsAtEpochSeconds != null
+        }
+    }
+
+    private fun JsonObject.toUsageCredits(): UsageCredits? {
+        val credits = UsageCredits(
+            hasCredits = booleanAt("has_credits") ?: booleanAt("hasCredits"),
+            unlimited = booleanAt("unlimited"),
+            balance = primitiveStringAt("balance"),
+        )
+        return credits.takeIf { it.hasCredits != null || it.unlimited != null || it.balance != null }
+    }
+
+    private fun JsonObject.booleanAt(key: String): Boolean? =
+        get(key)?.takeIf { it.isJsonPrimitive && it.asJsonPrimitive.isBoolean }?.asBoolean
+
+    private fun JsonObject.primitiveStringAt(key: String): String? =
+        get(key)?.takeIf { it.isJsonPrimitive }?.asString
 
     private fun isTokenUsageEvent(event: RawInsightEvent): Boolean {
         val payload = event.payload ?: return false
@@ -199,6 +244,8 @@ class CodexUsageExtractor {
         private val CACHE_CREATION_INPUT_TOKEN_KEYS = listOf(
             "cache_creation_input_tokens",
             "cacheCreationInputTokens",
+            "cache_write_input_tokens",
+            "cacheWriteInputTokens",
         )
 
         private val TOTAL_TOKEN_KEYS = listOf(
@@ -222,6 +269,18 @@ class CodexUsageExtractor {
             "rateLimitResetAt",
             "reset_at",
             "resetAt",
+        )
+
+        private val RATE_LIMIT_REMAINING_TOKENS_KEYS = listOf(
+            "remaining_tokens",
+            "remainingTokens",
+            "remaining",
+        )
+
+        private val RATE_LIMIT_LIMIT_TOKENS_KEYS = listOf(
+            "limit_tokens",
+            "limitTokens",
+            "limit",
         )
 
         private val CONTEXT_WINDOW_KEYS = listOf(

@@ -84,7 +84,7 @@ class ClaudeSessionsDialog(
             add(JBScrollPane(table), BorderLayout.CENTER)
             add(JBPanel<JBPanel<*>>(BorderLayout(0, 4)).apply {
                 add(JBPanel<JBPanel<*>>(BorderLayout(8, 0)).apply {
-                    add(JBLabel("Model:"), BorderLayout.WEST)
+                    add(JBLabel("Model to use:"), BorderLayout.WEST)
                     add(modelOverride, BorderLayout.CENTER)
                 }, BorderLayout.NORTH)
                 add(JBScrollPane(details), BorderLayout.CENTER)

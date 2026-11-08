@@ -90,19 +90,21 @@ class CodexUsageExtractorTest {
     @Test
     fun `extracts rate limit fields only when evidence exists`() {
         val events = parseEvents(
-            """{"type":"token_count","payload":{"total_tokens":50,"rate_limits":{"used_percent":72.5,"reset_at":"2026-07-04T12:30:00Z"}}}""",
+            """{"type":"token_count","payload":{"total_tokens":50,"rate_limits":{"used_percent":72.5,"reset_at":"2026-07-04T12:30:00Z","remaining_tokens":2750,"limit_tokens":10000}}}""",
         )
 
         val usage = CodexUsageExtractor().extract(events)
 
         assertEquals(72.5, usage?.rateLimitUsedPercent)
         assertEquals("2026-07-04T12:30:00Z", usage?.rateLimitResetAt)
+        assertEquals(2750L, usage?.rateLimitRemainingTokens)
+        assertEquals(10000L, usage?.rateLimitLimitTokens)
     }
 
     @Test
     fun `extracts current codex event message token schema`() {
         val events = parseEvents(
-            """{"type":"event_msg","payload":{"type":"token_count","info":{"total_token_usage":{"input_tokens":217197,"cached_input_tokens":192256,"output_tokens":2021,"reasoning_output_tokens":637,"total_tokens":219218},"last_token_usage":{"input_tokens":29865,"cached_input_tokens":29440,"output_tokens":189,"reasoning_output_tokens":53,"total_tokens":30054},"model_context_window":258400},"model":"gpt-6-codex","rate_limits":{"primary":{"used_percent":4.0,"resets_at":1784974038}}}}""",
+            """{"type":"event_msg","payload":{"type":"token_count","info":{"total_token_usage":{"input_tokens":217197,"cached_input_tokens":192256,"cache_write_input_tokens":12,"output_tokens":2021,"reasoning_output_tokens":637,"total_tokens":219218},"last_token_usage":{"input_tokens":29865,"cached_input_tokens":29440,"cache_write_input_tokens":3,"output_tokens":189,"reasoning_output_tokens":53,"total_tokens":30054},"model_context_window":258400},"model":"gpt-6-codex","rate_limits":{"limit_id":"codex","limit_name":"GPT Codex","primary":{"used_percent":4.0,"window_minutes":300,"resets_at":1784974038},"secondary":{"used_percent":12.0,"window_minutes":10080,"resets_at":1785578838},"credits":{"has_credits":true,"unlimited":false,"balance":"25.50"},"plan_type":"plus","rate_limit_reached_type":null,"spend_control_reached":false}}}""",
         )
 
         val usage = CodexUsageExtractor().extract(events)
@@ -111,15 +113,29 @@ class CodexUsageExtractorTest {
         assertEquals(192_256L, usage?.cachedInputTokens)
         assertEquals(2_021L, usage?.outputTokens)
         assertEquals(637L, usage?.reasoningOutputTokens)
+        assertEquals(12L, usage?.cacheCreationInputTokens)
         assertEquals(219_218L, usage?.totalTokens)
         assertEquals(29_865L, usage?.lastTurnInputTokens)
         assertEquals(189L, usage?.lastTurnOutputTokens)
         assertEquals(29_440L, usage?.lastTurnCachedInputTokens)
         assertEquals(53L, usage?.lastTurnReasoningOutputTokens)
+        assertEquals(3L, usage?.lastTurnCacheCreationInputTokens)
         assertEquals(30_054L, usage?.lastTurnTotalTokens)
         assertEquals(258_400L, usage?.contextWindowTokens)
         assertEquals("gpt-6-codex", usage?.modelName)
         assertEquals(4.0, usage?.rateLimitUsedPercent)
+        assertEquals(4.0, usage?.primaryRateLimit?.usedPercent)
+        assertEquals(300L, usage?.primaryRateLimit?.windowMinutes)
+        assertEquals(1_784_974_038L, usage?.primaryRateLimit?.resetsAtEpochSeconds)
+        assertEquals(12.0, usage?.secondaryRateLimit?.usedPercent)
+        assertEquals(10_080L, usage?.secondaryRateLimit?.windowMinutes)
+        assertEquals("25.50", usage?.usageCredits?.balance)
+        assertEquals(true, usage?.usageCredits?.hasCredits)
+        assertEquals(false, usage?.usageCredits?.unlimited)
+        assertEquals("codex", usage?.rateLimitId)
+        assertEquals("GPT Codex", usage?.rateLimitName)
+        assertEquals("plus", usage?.planType)
+        assertEquals(false, usage?.spendControlReached)
     }
 
     private fun parseEvents(vararg lines: String) =

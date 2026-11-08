@@ -8,7 +8,9 @@ import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBPanel
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.JBTextArea
+import com.intellij.ui.table.JBTable
 import com.spmisha134.skillops.insights.presentation.RunInsightsReportFormatter
+import com.spmisha134.skillops.insights.presentation.InsightMetric
 import com.spmisha134.skillops.insights.run.SkillOpsRunInsightsReport
 import com.spmisha134.skillops.insights.run.SkillRunInsight
 import com.spmisha134.skillops.presentation.NotificationPresenter
@@ -21,6 +23,7 @@ import java.nio.file.Path
 import javax.swing.JButton
 import javax.swing.DefaultComboBoxModel
 import javax.swing.JComponent
+import javax.swing.table.AbstractTableModel
 
 class RunInsightsDialog(
     private val project: Project,
@@ -31,10 +34,19 @@ class RunInsightsDialog(
 ) : DialogWrapper(project) {
     private var selectedInsight: SkillRunInsight? = null
     private val modelOverride = ComboBox<String>()
+    private val tokenHelp = JBLabel(
+        "Token values describe recorded session usage. Context capacity is approximate and is not account quota.",
+    )
     private val textArea = JBTextArea().apply {
         isEditable = false
         lineWrap = true
         wrapStyleWord = true
+    }
+    private val metricTable = JBTable(MetricTableModel()).apply {
+        columnModel.getColumn(0).preferredWidth = 100
+        columnModel.getColumn(1).preferredWidth = 250
+        columnModel.getColumn(2).preferredWidth = 150
+        columnModel.getColumn(3).preferredWidth = 420
     }
     private val skillSelector = ComboBox(
         DefaultComboBoxModel(
@@ -76,9 +88,9 @@ class RunInsightsDialog(
 
     override fun createCenterPanel(): JComponent =
         JBPanel<JBPanel<*>>(BorderLayout(0, 8)).apply {
-            preferredSize = Dimension(720, 420)
+            preferredSize = Dimension(1_000, 650)
             add(
-                JBPanel<JBPanel<*>>(java.awt.GridLayout(2, 1, 0, 6)).apply {
+                JBPanel<JBPanel<*>>(java.awt.GridLayout(3, 1, 0, 6)).apply {
                     add(JBPanel<JBPanel<*>>(BorderLayout(8, 0)).apply {
                         add(JBLabel("Skill:"), BorderLayout.WEST)
                         add(skillSelector, BorderLayout.CENTER)
@@ -94,7 +106,15 @@ class RunInsightsDialog(
                 },
                 BorderLayout.NORTH,
             )
-            add(JBScrollPane(textArea), BorderLayout.CENTER)
+            add(JBPanel<JBPanel<*>>(BorderLayout(0, 8)).apply {
+                add(JBScrollPane(metricTable), BorderLayout.CENTER)
+                add(JBPanel<JBPanel<*>>(BorderLayout(0, 4)).apply {
+                    add(tokenHelp, BorderLayout.NORTH)
+                    add(JBScrollPane(textArea).apply {
+                        preferredSize = Dimension(0, 140)
+                    }, BorderLayout.CENTER)
+                }, BorderLayout.SOUTH)
+            }, BorderLayout.CENTER)
             add(JBPanel<JBPanel<*>>(java.awt.FlowLayout(java.awt.FlowLayout.RIGHT, 8, 0)).apply {
                 add(copySessionIdButton)
                 add(resumeButton)
@@ -108,11 +128,10 @@ class RunInsightsDialog(
         selectedInsight = insight
         modelOverride.selectedItem = insight?.resumeTarget?.modelName ?: insight?.tokenUsage?.modelName ?: DEFAULT_MODEL_OPTION
         modelOverride.isEnabled = insight?.resumeTarget != null
-        textArea.text = if (insight == null) {
-            formatter.format(report)
-        } else {
-            formatter.format(insight, report.platformName)
-        }
+        val model = metricTable.model as MetricTableModel
+        model.rows = insight?.let { formatter.metrics(it, report.platformName) }.orEmpty()
+        model.fireTableDataChanged()
+        textArea.text = insight?.let(::notesFor) ?: report.warnings.joinToString("\n")
         textArea.caretPosition = 0
         val resumable = selectedInsight?.resumeTarget != null
         resumeButton.isVisible = report.platformName == "Codex" || report.platformName == "Claude"
@@ -154,6 +173,29 @@ class RunInsightsDialog(
                 project,
                 "Could not resume ${report.platformName} session: ${error.message ?: error.javaClass.simpleName}",
             )
+        }
+    }
+
+    private fun notesFor(insight: SkillRunInsight): String = buildString {
+        if (insight.prompts.isNotEmpty()) {
+            appendLine("Prompts")
+            insight.prompts.forEachIndexed { index, prompt -> appendLine("${index + 1}. $prompt") }
+        }
+        if (insight.warnings.isNotEmpty()) {
+            if (isNotEmpty()) appendLine()
+            appendLine("Notes")
+            insight.warnings.forEach { appendLine("- $it") }
+        }
+        if (isEmpty()) append("No additional notes.")
+    }
+
+    private class MetricTableModel(var rows: List<InsightMetric> = emptyList()) : AbstractTableModel() {
+        private val columns = arrayOf("Section", "Metric", "Value", "What it means")
+        override fun getRowCount(): Int = rows.size
+        override fun getColumnCount(): Int = columns.size
+        override fun getColumnName(column: Int): String = columns[column]
+        override fun getValueAt(row: Int, column: Int): Any = rows[row].let {
+            when (column) { 0 -> it.section; 1 -> it.name; 2 -> it.value; else -> it.explanation }
         }
     }
 

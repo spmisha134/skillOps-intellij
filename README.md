@@ -134,7 +134,7 @@ Open the IntelliJ **Tools** menu and follow the nested SkillOps and Codex menus:
 
 ![Open Codex Run Insights from the IntelliJ Tools menu](docs/images/skillops-tools-menu.png)
 
-Run insights scan recent Codex JSONL sessions from the configured Codex home and show token totals, input/output split, cached-token percentage, reasoning-token percentage, repository/search activity, rate-limit status, and session-size warnings. Skill runs are grouped by skill name; ordinary project sessions remain available under `No skill`, with separate timestamped history entries.
+Run insights scan recent Codex JSONL sessions from the configured Codex home and show cumulative and latest-context token details, context capacity, repository/search activity, rate-limit windows and reset times, plan and credit status, and session-size warnings. Skill runs are grouped by skill name; ordinary project sessions remain available under `No skill`, with separate timestamped history entries.
 
 Claude run insights scan `~/.claude/projects` (or the configured Claude home), aggregate distinct assistant-call usage, merge subagent transcripts into their parent session, and show input, output, cache-read, cache-creation, tool, and search metrics. Reasoning-token and rate-limit fields are omitted because normal Claude transcripts do not expose them.
 

@@ -38,7 +38,7 @@ open class ShowRunInsightsAction(
         val settings = SkillOpsInsightsSettingsState.getInstance().settings.copy()
 
         ProgressManager.getInstance().run(
-            object : Task.Modal(project, "Loading $platformLabel sessions", false) {
+            object : Task.Modal(project, "Loading $platformLabel sessions", true) {
                 private lateinit var report: SkillOpsRunInsightsReport
 
                 override fun run(indicator: ProgressIndicator) {
