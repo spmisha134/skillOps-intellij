@@ -21,6 +21,7 @@
     <depends>org.jetbrains.plugins.terminal</depends>
 
     <extensions defaultExtensionNs="com.intellij">
+        <errorHandler implementation="com.intellij.diagnostic.JetBrainsMarketplaceErrorReportSubmitter"/>
         <applicationConfigurable id="com.spmisha134.skillops.insights.settings"
                                  displayName="SkillOps Insights"
                                  instance="com.spmisha134.skillops.insights.settings.SkillOpsInsightsConfigurable"/>

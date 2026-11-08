@@ -1,5 +1,6 @@
 package com.spmisha134.skillops.insights.codex
 
+import com.google.gson.JsonElement
 import com.spmisha134.skillops.insights.parser.RawInsightEvent
 import com.spmisha134.skillops.insights.parser.InsightTimestamp
 import com.spmisha134.skillops.insights.usage.TokenUsage
@@ -20,6 +21,7 @@ class CodexStreamingAccumulator(
     private var projectPathSeen = false
     private var projectMatched = false
     private var latestTokenUsage: TokenUsage? = null
+    private var observedModelName: String? = null
     private var firstUserCommand: String? = null
     private var previousUserCommand: String? = null
     private var invocationCommand: String? = null
@@ -37,6 +39,7 @@ class CodexStreamingAccumulator(
         val text = event.payload?.toString().orEmpty()
         val lowerText = text.lowercase()
         updateProjectMatch(event)
+        findStringDeep(event.payload, "model", "model_name", "modelName")?.let { observedModelName = it }
         tokenUsageExtractor.extract(listOf(event))?.let { latestTokenUsage = it }
 
         val userCommand = CodexPromptSummary.userMessage(event)
@@ -97,6 +100,7 @@ class CodexStreamingAccumulator(
             workingDirectory,
             CodexPromptSummary.title(userPrompts),
             userPrompts.toList(),
+            observedModelName ?: latestTokenUsage?.modelName,
         )
     }
 
@@ -167,6 +171,19 @@ class CodexStreamingAccumulator(
 
     private fun string(payload: com.google.gson.JsonObject, name: String): String? =
         payload.get(name)?.takeIf { it.isJsonPrimitive && it.asJsonPrimitive.isString }?.asString
+
+    private fun findStringDeep(root: JsonElement?, vararg names: String): String? {
+        if (root == null || root.isJsonNull) return null
+        if (root.isJsonObject) {
+            root.asJsonObject.entrySet().forEach { (key, value) ->
+                if (key in names && value.isJsonPrimitive && value.asJsonPrimitive.isString) return value.asString
+                findStringDeep(value, *names)?.let { return it }
+            }
+        } else if (root.isJsonArray) {
+            root.asJsonArray.forEach { child -> findStringDeep(child, *names)?.let { return it } }
+        }
+        return null
+    }
 
     private fun String.toPathOrNull(): Path? = try {
         Path.of(this).toAbsolutePath().normalize()

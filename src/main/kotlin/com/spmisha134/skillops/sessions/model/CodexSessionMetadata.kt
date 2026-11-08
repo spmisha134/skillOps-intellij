@@ -7,8 +7,9 @@ data class CodexSessionMetadata(
     val workingDirectory: Path?,
     val title: String?,
     val userPrompts: List<String>,
+    val modelName: String? = null,
 ) {
     val initialPrompt: String?
         get() = userPrompts.firstOrNull()
-    fun toResumeTarget(): SessionResumeTarget = SessionResumeTarget(sessionId, workingDirectory)
+    fun toResumeTarget(): SessionResumeTarget = SessionResumeTarget(sessionId, workingDirectory, modelName)
 }

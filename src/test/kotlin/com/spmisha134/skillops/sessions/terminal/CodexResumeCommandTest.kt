@@ -11,4 +11,12 @@ class CodexResumeCommandTest {
             CodexResumeCommand.build("019cb301-f5cf-76c0-a1db-8ef3580d7800"),
         )
     }
+
+    @Test
+    fun `adds recorded model when available`() {
+        assertEquals(
+            "codex resume --model 'gpt-6-codex' 019cb301-f5cf-76c0-a1db-8ef3580d7800",
+            CodexResumeCommand.build("019cb301-f5cf-76c0-a1db-8ef3580d7800", "gpt-6-codex"),
+        )
+    }
 }

@@ -164,6 +164,10 @@ Responsibilities:
 
 Actions must stay thin.
 
+Action callbacks must keep filesystem discovery, generation, parsing, and validation
+off the Swing event dispatch thread. Run those operations in IntelliJ progress tasks;
+only dialogs, notifications, and presentation updates belong on the UI thread.
+
 ### 5.2 `ui`
 
 Dialog and form code.

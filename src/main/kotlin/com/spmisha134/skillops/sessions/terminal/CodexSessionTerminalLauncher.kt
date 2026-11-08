@@ -20,7 +20,7 @@ class CodexSessionTerminalLauncher {
         )
         terminalManager.toolWindow.activate {
             widget.requestFocus()
-            widget.sendCommandToExecute(CodexResumeCommand.build(target.sessionId))
+            widget.sendCommandToExecute(CodexResumeCommand.build(target.sessionId, target.modelName))
         }
     }
 

@@ -33,17 +33,18 @@ intellijPlatform {
                 <li>Generate optional scripts and assets, plus Codex interface metadata.</li>
                 <li>Validate Codex skills before committing them.</li>
                 <li>Review local Codex, Claude, and Gemini run history, token usage, cache behavior, efficiency, and sessions without skills.</li>
-                <li>Search and resume previous project Codex sessions in a new IntelliJ terminal.</li>
+                <li>Search and resume previous project Codex or Claude sessions in a new IntelliJ terminal.</li>
             </ul>
             <p><strong>Private by design:</strong> generation, validation, and session analysis run locally. SkillOps does not upload project files, prompts, session logs, credentials, or analytics.</p>
         """.trimIndent()
         changeNotes = """
             <ul>
-                <li>Preserves and displays Codex prompt history for Resume Session and Run Insights.</li>
-                <li>Derives concise session titles from the latest meaningful prompt and filters injected project instructions.</li>
-                <li>Prioritizes token metrics and efficiency details before prompts in Run Insights.</li>
-                <li>Explains transcript-size warnings in terms of scan time and context overhead.</li>
-                <li>Supports IntelliJ IDEA from 2024.2 onward and verifies compatibility through 2025.2.</li>
+                <li>Reworks Run Insights into a structured metrics table with plain-language explanations.</li>
+                <li>Shows cumulative session usage separately from the latest context or assistant call.</li>
+                <li>Adds Codex rolling rate-limit windows, reset times, plan details, and credit status when recorded.</li>
+                <li>Moves skill generation, validation, and post-copy VFS refreshes off the UI thread to prevent IDE freezes.</li>
+                <li>Adds cancellation while Run Insights sessions are loading.</li>
+                <li>Enables JetBrains Marketplace exception and freeze reporting.</li>
             </ul>
         """.trimIndent()
 

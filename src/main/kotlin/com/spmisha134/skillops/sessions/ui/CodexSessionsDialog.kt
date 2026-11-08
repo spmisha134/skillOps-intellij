@@ -9,6 +9,7 @@ import com.intellij.ui.components.JBPanel
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.JBTextField
 import com.intellij.ui.components.JBTextArea
+import com.intellij.openapi.ui.ComboBox
 import com.intellij.ui.table.JBTable
 import com.spmisha134.skillops.presentation.NotificationPresenter
 import com.spmisha134.skillops.sessions.model.CodexSession
@@ -50,10 +51,17 @@ class CodexSessionsDialog(
         lineWrap = true
         wrapStyleWord = true
     }
+    private val modelOverride = ComboBox<String>().apply {
+        addActionListener { selectedSession()?.let { detailsArea.text = formatDetails(it) } }
+    }
 
     init {
         title = "Codex Sessions"
         setOKButtonText("Resume Session")
+        modelOverride.model = javax.swing.DefaultComboBoxModel(
+            arrayOf(DEFAULT_MODEL_OPTION) + result.sessions.mapNotNull { it.resumeTarget.modelName }.distinct().toTypedArray()
+        )
+        modelOverride.isEditable = false
         init()
         table.selectionModel.selectionMode = ListSelectionModel.SINGLE_SELECTION
         table.autoCreateRowSorter = true
@@ -95,7 +103,13 @@ class CodexSessionsDialog(
             add(JBScrollPane(table), BorderLayout.CENTER)
             add(JBPanel<JBPanel<*>>(BorderLayout(0, 4)).apply {
                 add(JBLabel("Selected session:"), BorderLayout.NORTH)
-                add(JBScrollPane(detailsArea), BorderLayout.CENTER)
+                add(JBPanel<JBPanel<*>>(BorderLayout(0, 4)).apply {
+                    add(JBPanel<JBPanel<*>>(BorderLayout(8, 0)).apply {
+                        add(JBLabel("Model to use:"), BorderLayout.WEST)
+                        add(modelOverride, BorderLayout.CENTER)
+                    }, BorderLayout.NORTH)
+                    add(JBScrollPane(detailsArea), BorderLayout.CENTER)
+                }, BorderLayout.CENTER)
             }, BorderLayout.SOUTH)
         }, BorderLayout.CENTER)
         add(JBPanel<JBPanel<*>>(BorderLayout()).apply {
@@ -110,7 +124,7 @@ class CodexSessionsDialog(
     override fun doOKAction() {
         val session = selectedSession() ?: return
         try {
-            launcher.resume(project, session.resumeTarget, projectRoot)
+            launcher.resume(project, session.resumeTarget.copy(modelName = selectedModel()), projectRoot)
             close(OK_EXIT_CODE)
         } catch (error: Throwable) {
             NotificationPresenter.showError(
@@ -136,6 +150,8 @@ class CodexSessionsDialog(
         val hasSelection = session != null
         isOKActionEnabled = hasSelection
         copyButton.isEnabled = hasSelection
+        modelOverride.selectedItem = session?.resumeTarget?.modelName ?: DEFAULT_MODEL_OPTION
+        modelOverride.isEnabled = hasSelection
         detailsArea.text = session?.let(::formatDetails) ?: "Select a session to see its task and resume command."
         detailsArea.caretPosition = 0
     }
@@ -153,10 +169,18 @@ class CodexSessionsDialog(
         appendLine()
         appendLine("Working directory:")
         appendLine(session.resumeTarget.workingDirectory ?: projectRoot)
+        session.resumeTarget.modelName?.let {
+            appendLine()
+            appendLine("Model:")
+            appendLine(it)
+        }
         appendLine()
         appendLine("Command:")
-        append(CodexResumeCommand.build(session.resumeTarget.sessionId))
+        append(CodexResumeCommand.build(session.resumeTarget.sessionId, selectedModel()))
     }
+
+    private fun selectedModel(): String? =
+        (modelOverride.selectedItem as? String)?.takeUnless { it == DEFAULT_MODEL_OPTION }
 
     private class SessionTableModel(private val allSessions: List<CodexSession>) : AbstractTableModel() {
         private var sessions = allSessions
@@ -196,6 +220,7 @@ class CodexSessionsDialog(
     }
 
     companion object {
+        private const val DEFAULT_MODEL_OPTION = "Use configured default"
         private val DATE_FORMAT: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
     }
 }

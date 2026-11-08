@@ -9,6 +9,7 @@ import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.JBTextField
 import com.intellij.ui.components.JBTextArea
+import com.intellij.openapi.ui.ComboBox
 import com.intellij.ui.table.JBTable
 import com.spmisha134.skillops.presentation.NotificationPresenter
 import com.spmisha134.skillops.sessions.model.ClaudeSession
@@ -41,6 +42,9 @@ class ClaudeSessionsDialog(
     private val table = JBTable(model)
     private val details = JBTextArea(5, 80).apply { isEditable = false; lineWrap = true; wrapStyleWord = true }
     private val copy = JButton("Copy Session ID")
+    private val modelOverride = ComboBox<String>().apply {
+        addActionListener { refresh() }
+    }
     private val continueButton = JButton("Continue Most Recent")
     private val pickerButton = JButton("Open Claude Session Picker")
     private val namedButton = JButton("Resume Named Session")
@@ -48,6 +52,10 @@ class ClaudeSessionsDialog(
     init {
         title = "Claude Sessions"
         setOKButtonText("Resume Session")
+        modelOverride.model = javax.swing.DefaultComboBoxModel(
+            arrayOf(DEFAULT_MODEL_OPTION) + result.sessions.mapNotNull { it.resumeTarget.modelName }.distinct().toTypedArray()
+        )
+        modelOverride.isEditable = false
         init()
         table.selectionModel.selectionMode = ListSelectionModel.SINGLE_SELECTION
         table.autoCreateRowSorter = true
@@ -72,7 +80,16 @@ class ClaudeSessionsDialog(
     override fun createCenterPanel(): JComponent = JBPanel<JBPanel<*>>(BorderLayout(0, 8)).apply {
         preferredSize = Dimension(1000, 560)
         add(JBPanel<JBPanel<*>>(BorderLayout(8, 0)).apply { add(JBLabel("Search:"), BorderLayout.WEST); add(search, BorderLayout.CENTER) }, BorderLayout.NORTH)
-        add(JBPanel<JBPanel<*>>(BorderLayout(0, 8)).apply { add(JBScrollPane(table), BorderLayout.CENTER); add(JBScrollPane(details), BorderLayout.SOUTH) }, BorderLayout.CENTER)
+        add(JBPanel<JBPanel<*>>(BorderLayout(0, 8)).apply {
+            add(JBScrollPane(table), BorderLayout.CENTER)
+            add(JBPanel<JBPanel<*>>(BorderLayout(0, 4)).apply {
+                add(JBPanel<JBPanel<*>>(BorderLayout(8, 0)).apply {
+                    add(JBLabel("Model to use:"), BorderLayout.WEST)
+                    add(modelOverride, BorderLayout.CENTER)
+                }, BorderLayout.NORTH)
+                add(JBScrollPane(details), BorderLayout.CENTER)
+            }, BorderLayout.SOUTH)
+        }, BorderLayout.CENTER)
         add(JBPanel<JBPanel<*>>(FlowLayout(FlowLayout.RIGHT, 8, 0)).apply {
             add(continueButton); add(pickerButton); add(namedButton); add(copy)
             result.warnings.joinToString(" ").takeIf(String::isNotBlank)?.let { add(JBLabel(it), 0) }
@@ -83,7 +100,13 @@ class ClaudeSessionsDialog(
 
     override fun doOKAction() {
         val session = selected() ?: return
-        runCommand(ClaudeResumeCommand.build(session.resumeTarget.sessionId), session)
+        runCommand(
+            ClaudeResumeCommand.build(
+                session.resumeTarget.sessionId,
+                selectedModel(),
+            ),
+            session,
+        )
     }
 
     private fun runCommand(command: String, session: ClaudeSession?) {
@@ -101,10 +124,20 @@ class ClaudeSessionsDialog(
         val session = selected()
         isOKActionEnabled = session != null
         copy.isEnabled = session != null
-        details.text = session?.let { "Task: ${it.initialPrompt ?: "(No task summary recorded)"}\nWorking directory: ${it.resumeTarget.workingDirectory ?: projectRoot}\nCommand: ${ClaudeResumeCommand.build(it.resumeTarget.sessionId)}" }
+        modelOverride.selectedItem = session?.resumeTarget?.modelName ?: DEFAULT_MODEL_OPTION
+        modelOverride.isEnabled = session != null
+        details.text = session?.let {
+            "Task: ${it.initialPrompt ?: "(No task summary recorded)"}" +
+                "\nWorking directory: ${it.resumeTarget.workingDirectory ?: projectRoot}" +
+                it.resumeTarget.modelName?.let { model -> "\nModel: $model" }.orEmpty() +
+                "\nCommand: ${ClaudeResumeCommand.build(it.resumeTarget.sessionId, selectedModel())}"
+        }
             ?: "Select a session to see its task and resume command."
         details.caretPosition = 0
     }
+
+    private fun selectedModel(): String? =
+        (modelOverride.selectedItem as? String)?.takeUnless { it == DEFAULT_MODEL_OPTION }
 
     private class SessionTableModel(private val all: List<ClaudeSession>) : AbstractTableModel() {
         private var rows = all
@@ -124,5 +157,8 @@ class ClaudeSessionsDialog(
         fun filter(query: String) { val q = query.trim().lowercase(); rows = if (q.isEmpty()) all else all.filter { s -> listOfNotNull(s.resumeTarget.sessionId, s.resumeTarget.workingDirectory?.toString(), s.initialPrompt, s.skillNames.joinToString()).any { it.lowercase().contains(q) } }; fireTableDataChanged() }
     }
 
-    companion object { private val DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm") }
+    companion object {
+        private const val DEFAULT_MODEL_OPTION = "Use configured default"
+        private val DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
+    }
 }

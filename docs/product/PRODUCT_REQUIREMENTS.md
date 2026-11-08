@@ -350,7 +350,7 @@ The action must scan recent Codex JSONL session files from the configured Codex 
 - output/input ratio
 - reasoning output percentage
 - repository/search activity count
-- rate-limit usage when available
+- provider rate-limit windows, reset times, plan, and credit status when available
 - warnings for missing token usage, large session logs, high search activity, and high rate-limit usage
 
 The action must be local-first and must not call OpenAI APIs or remote services.

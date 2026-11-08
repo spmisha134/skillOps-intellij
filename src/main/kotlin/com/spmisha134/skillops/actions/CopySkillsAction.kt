@@ -23,6 +23,7 @@ import com.spmisha134.skillops.ui.copy.CopySkillsDialog
 import com.spmisha134.skillops.ui.copy.CopySkillsProgressDialog
 import java.nio.file.Path
 import java.util.concurrent.atomic.AtomicReference
+import javax.swing.SwingUtilities
 
 class CopySkillsAction : AnAction() {
     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
@@ -69,16 +70,23 @@ class CopySkillsAction : AnAction() {
         progressDialog.show()
         ApplicationManager.getApplication().executeOnPooledThread {
             val outcome = runCatching { SkillCopyService().copy(request, conflictResolver(project)) }
+            outcome.onSuccess { refreshProjectRoot(projectRoot) }
             ApplicationManager.getApplication().invokeLater {
                 progressDialog.close(0)
                 outcome.onSuccess { completed ->
-                LocalFileSystem.getInstance().refreshAndFindFileByNioFile(projectRoot)?.refresh(false, true)
-                showResult(project, request.targetPlatform.displayName, completed)
+                    showResult(project, request.targetPlatform.displayName, completed)
                 }.onFailure { error ->
                     NotificationPresenter.showError(project, "Could not copy skills: ${error.message ?: error.javaClass.simpleName}")
                 }
             }
         }
+    }
+
+    private fun refreshProjectRoot(projectRoot: Path) {
+        check(!SwingUtilities.isEventDispatchThread()) { "Project VFS refresh must not run on the EDT." }
+        LocalFileSystem.getInstance()
+            .refreshAndFindFileByNioFile(projectRoot)
+            ?.refresh(false, true)
     }
 
     private fun conflictResolver(project: Project) = SkillConflictResolver { sourceName, targetPath ->
